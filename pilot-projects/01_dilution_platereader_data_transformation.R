@@ -78,6 +78,8 @@ df <- data.frame(
 df <- df %>%
   left_join(df.design, by = c("Row", "Column")) # Merge the data
 
+write.csv(df, "pilot-projects/03_dilution_data_clean.csv") # Save cleaned data
+
 # OK, now we want to examine the microbial optical density stuff
 
 blankOD600<- mean(df$OD600[1:3])
@@ -115,5 +117,5 @@ ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0), aes(x =
   ) +
   theme_classic()
 
-write.csv(df, "pilot-projects/03_dilution_data_clean.csv") # Save cleaned data
+
 

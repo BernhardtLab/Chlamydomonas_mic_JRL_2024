@@ -11,6 +11,7 @@ library(zoo)
 library(ggplot2)
 library(readxl)
 library(lubridate)
+library(openxlsx)
 
 ############### Access the csv files ######################
 
@@ -35,8 +36,13 @@ df$ID <- paste(df$Well.ID, df$plate, sep=".") # Unique ID for each well
 
 ################# Test run ########################
 
-file.path <- "pilot-projects/em1021_pilot_t0.xlsx"
-df.rawd <- read_excel(file.path, range = "B46:N78")
+file.path <- "pilot-projects/em1022_pilot_t1.xlsx"
+df.rawd <- read_excel(file.path, col_names = T, range = "B46:N78")
+
+df.rawd <- read.xlsx(file.path, rows = 47:78, cols = 2:14, colNames = FALSE)
+
+file.path <- "pilot-projects/em1022_pilot_t2.xlsx"
+df.rawd <- read.xlsx(file.path, rows = 47:78, cols = 2:14, colNames = FALSE)
 
 # The following is the code we need to run for every plate...
 
@@ -127,7 +133,7 @@ for (i in 0:6){ # File name indices
   file.path2 <- paste("pilot-projects/em1022_pilot_t", i, ".xlsx", sep = "") # 1022 data
   
   df.rawd1 <- read_excel(file.path, range = "B46:N78")
-  df.rawd2 <- read_excel(file.path, range = "B46:N78")
+  df.rawd2 <- read_excel(file.path2, range = "B46:N78")
   
   df.rawd1$...1 <- zoo::na.locf(df.rawd1$...1) # dfrawd1 first
   df.rawd1$meas <- rep(c("RFU", "OD600", "OD700", "OD750"), 8)

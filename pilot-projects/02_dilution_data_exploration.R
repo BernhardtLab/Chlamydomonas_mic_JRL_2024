@@ -27,7 +27,7 @@ blankRFU <- mean(df$RFU[1:3])
 
 # First we want to know: what is the relationship between Chlamy RFU and optical density?
 
-C.600 <- ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0), aes(x = OD600 - blankOD600, y = RFU - blankRFU)) +
+C.600 <- ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0 & df$V.Chlamy != 20.0), aes(x = OD600 - blankOD600, y = RFU - blankRFU)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") + # Add linear regression line +
   labs(
@@ -37,7 +37,7 @@ C.600 <- ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0)
   ) +
   theme_classic()
 
-C.700 <- ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0), aes(x = OD700 - blankOD700, y = RFU - blankRFU)) +
+C.700 <- ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0 & df$V.Chlamy != 20.0), aes(x = OD700 - blankOD700, y = RFU - blankRFU)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") + # Add linear regression line +
   labs(
@@ -47,7 +47,7 @@ C.700 <- ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0)
   ) +
   theme_classic()
 
-C.750 <- ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0), aes(x = OD750 - blankOD750, y = RFU - blankRFU)) +
+C.750 <- ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0 & df$V.Chlamy != 20.0), aes(x = OD750 - blankOD750, y = RFU - blankRFU)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") + # Add linear regression line +
   labs(
@@ -107,3 +107,72 @@ ggplot(data = subset(df, V.Chlamy != 0 & V.Em1021 == 0 & V.Em1022 == 0), aes(x =
 
 
 ############# More sophisticated model exploration #####################
+
+#Let's make a dataset that includes only wells with both Chlamy and microbes
+
+df.1021 <- df[df$V.Chlamy != 0 & df$V.Em1021 != 0,] 
+
+df.1022 <- df[df$V.Chlamy != 0 & df$V.Em1022 != 0,] 
+
+C.21 <- ggplot(data = df.1021, aes(x = OD600 - blankOD600, y = RFU - blankRFU, colour= as.factor(as.character(C.Chlamy)))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") + # Add linear regression line +
+  labs(
+    title = "OD600 vs. RFU",
+    x = "OD600",
+    y = "RFU"
+  ) +
+  theme_classic()
+
+C.21
+
+C.22 <- ggplot(data = df.1022, aes(x = OD600 - blankOD600, y = RFU - blankRFU, colour= as.factor(as.character(C.Chlamy)))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") + # Add linear regression line +
+  labs(
+    title = "OD600 vs. RFU",
+    x = "OD600",
+    y = "RFU"
+  ) +
+  theme_classic()
+
+C.22
+
+# OK we need to calibrate the relationship b/w [RFUs] and OD600
+
+df.C <- df[df$V.Chlamy != 0 & df$V.Em1021 == 0 & df$V.Em1022 == 0 & df$OD600 < 0.29 , ] 
+
+C.0 <- ggplot(data = df.C, aes(x = OD600 - blankOD600, y = RFU - blankRFU, colour= as.factor(as.character(C.Chlamy)))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") + # Add linear regression line +
+  labs(
+    title = "OD600 vs. RFU",
+    x = "OD600",
+    y = "RFU"
+  ) +
+  theme_classic()
+
+C.0
+
+df.C$RFU.mod <- df.C$RFU- blankRFU
+df.C$OD600.mod <- df.C$OD600- blankOD600
+RFU.OD.reg <- lm(OD600.mod~RFU.mod, data=df.C)
+summary(RFU.OD.reg)
+
+df.1022$RFU.mod <- df.1022$RFU- blankRFU
+
+# Equation: ~ OD ~= 2.286e-05*RFU + 1.074e-02
+# So calculate optical density of Ensifer after converting Chlamy's contribution?
+df.1022$bac.den <- df.1022$OD600 - blankOD600 - 2.286e-05*(df.1022$RFU.mod) + 1.047e-02
+
+C.22.OD.corr <- ggplot(data = df.1022, aes(x = C.Em1022, y = bac.den,)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") + # Add linear regression line +
+  labs(
+    title = "Chlamy-corrected OD600",
+    x = "C.EM1022",
+    y = "OD(bac)"
+  ) +
+  theme_classic()
+
+C.22.OD.corr

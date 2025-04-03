@@ -878,7 +878,7 @@ for (i in c(1:4,6:8)){ # File name indices
     
     for (c in 1:12){
       
-      if (j == x){ # Only record row and column every four rows.
+      if (j/4 == x){ # Only record row and column every four rows.
         Row <- c(Row, x) # row number
         Col <- c(Col, c) # column number  
         Read <- c(Read, i) # record the read #
@@ -942,3 +942,179 @@ df.30$days <- as.numeric(difftime(df.30$datetime, min(df.30$datetime, na.rm = TR
 df <- rbind(df.8, df.14, df.20, df.25, df.30, df.33, df.35, df.37, df.40, df.43)
 
 write.csv(df, "pilot-projects/10_full_pilot_data.csv") # Save cleaned data
+
+##################### Data analysis #################################
+
+# (1) Can we back-calculate microbial OD contributions based on the relationship between RFUs and OD in Chlamy-only wells?
+# We will only use =< 30 C data due to evaporation at higher temperatures. 
+
+df.nobac <- df[df$Microbe=='none' & df$Temperature<= 30,]
+
+p <- ggplot(df.nobac, aes(x = RFU, y = OD600)) +
+  geom_point(size = 2) +
+  labs(
+    title = "Relationship between OD and RFUs in Chlamy only wells",
+    x = "RFUs",
+    y = "OD600"
+  ) +
+  theme_classic()
+
+p
+
+p2 <- ggplot(df.nobac, aes(x = log(RFU), y = OD600)) +
+  geom_point(size = 2) +
+  labs(
+    title = "Relationship between OD and logged RFUs in Chlamy only wells",
+    x = "logged RFUs",
+    y = "OD600"
+  ) +
+  theme_classic()
+
+p2
+
+# Try restricting this only to high N, low S?
+
+df.nobac.nostress <- df[df$Microbe=='none' & df$Temperature<= 30 & df$Salt.conc == 0 & df$Nitrogen.conc >= 400,]
+
+p3 <- ggplot(df.nobac.nostress, aes(x = RFU, y = OD600)) +
+  geom_point(size = 2) +
+  labs(
+    title = "OD600 ~ RFUs in Chlamy, benign conditions",
+    x = "RFUs",
+    y = "OD600"
+  ) +
+  theme_classic()
+
+p3
+
+# Maybe this is breaking down by temperature? 
+
+p3.1 <- ggplot(df.nobac.nostress, aes(x = RFU, y = OD600, color = Temperature)) +
+  geom_point(size = 2) +
+  labs(
+    title = "OD600 ~ RFUs in Chlamy, benign conditions",
+    x = "RFUs",
+    y = "OD600"
+  ) +
+  theme_classic()
+
+p3.1
+
+# Maybe day?
+
+p3.2 <- ggplot(df.nobac.nostress, aes(x = RFU, y = OD600, color = days)) +
+  geom_point(size = 2) +
+  labs(
+    title = "OD600 ~ RFUs in Chlamy, benign conditions",
+    x = "RFUs",
+    y = "OD600"
+  ) +
+  theme_classic()
+
+p3.2 # So this actually looks good over time, it's just the initial values that are off!
+
+p4 <- ggplot(df.nobac.nostress, aes(x = log(RFU), y = OD600, color = days)) +
+  geom_point(size = 2) +
+  labs(
+    title = "OD600 ~ logged RFUs in Chlamy, benign conditions",
+    x = "RFUs",
+    y = "OD600"
+  ) +
+  theme_classic()
+
+p4
+
+# Ok so conclusions: this doesn't work great at really low RFUs, but we should be able to do something here!
+
+####################################################
+
+# (2) Does bacterial inoculation affect growth rates of Chlamydomonas?
+# Here we will focus on growth rates, not TPCs per se, because we had so much evaporation at high temperatures
+
+# (3) How do salt and nitrogen gradients affect Chlamydomonas and microbial growth?
+
+df.plt <- df[df$Chlamy=='y',]
+
+df.salt <- df.plt[df.plt$Nitrogen.conc == 1000 & df.plt$Temperature == 30,] # pull out the salt treatments first
+
+p.salt <- ggplot(df.salt, aes(x = as.numeric(as.character(days)), y = RFU, color = as.factor(Microbe))) +
+  geom_line(aes(group = interaction(Row, Column, Plate)), alpha = 0.7) +  # Connect points per well
+  geom_point(size = 2) +
+  facet_wrap(~ Salt.conc, ncol = 5) +  # Facet by salt level across multiple panels
+  scale_color_manual(
+    values = c(
+      "none" = "springgreen4",
+      "1" = "tomato"
+    ),
+    name = "Microbe"
+  ) +
+  labs(
+    title = "Chlamydomonas Growth Across Salt Concentration Gradient",
+    subtitle = "N = 1000, Temperature = 30°C",
+    x = "Elapsed Days",
+    y = "RFU"
+  ) +
+  theme_classic() +
+  theme(
+    strip.background = element_rect(fill = "gray90", color = NA),
+    strip.text = element_text(face = "bold"),
+    legend.position = "top"
+  )
+
+p.salt
+
+df.nit <- df.plt[df.plt$Salt.conc == 0 & df.plt$Temperature == 30,] # pull out the nitrogen gradient now
+
+p.nit <- ggplot(df.nit, aes(x = as.numeric(as.character(days)), y = RFU, color = as.factor(Microbe))) +
+  geom_line(aes(group = interaction(Row, Column, Plate)), alpha = 0.7) +  # Connect points per well
+  geom_point(size = 2) +
+  facet_wrap(~ Nitrogen.conc, ncol = 5) +  # Facet by salt level across multiple panels
+  scale_color_manual(
+    values = c(
+      "none" = "springgreen4",
+      "1" = "tomato"
+    ),
+    name = "Microbe"
+  ) +
+  labs(
+    title = "Chlamydomonas Growth Across Nitrogen Concentration Gradient",
+    subtitle = "S = 0, Temperature = 30°C",
+    x = "Elapsed Days",
+    y = "RFU"
+  ) +
+  theme_classic() +
+  theme(
+    strip.background = element_rect(fill = "gray90", color = NA),
+    strip.text = element_text(face = "bold"),
+    legend.position = "top"
+  )
+
+p.nit
+
+df.t <- df.plt[df.plt$Salt.conc == 0 & df.plt$Nitrogen.conc == 1000 & df.plt$Temperature <= 30,] # pull out the temperature gradient now
+
+p.temp <- ggplot(df.t, aes(x = as.numeric(as.character(days)), y = RFU, color = as.factor(Microbe))) +
+  geom_line(aes(group = interaction(Row, Column, Plate)), alpha = 0.7) +  # Connect points per well
+  geom_point(size = 2) +
+  facet_wrap(~ Temperature, ncol = 3) +  # Facet by salt level across multiple panels
+  scale_color_manual(
+    values = c(
+      "none" = "springgreen4",
+      "1" = "tomato"
+    ),
+    name = "Microbe"
+  ) +
+  labs(
+    title = "Chlamydomonas Growth Across Temperature Gradient",
+    subtitle = "S = 0, N = 1000",
+    x = "Elapsed Days",
+    y = "RFU"
+  ) +
+  theme_classic() +
+  theme(
+    strip.background = element_rect(fill = "gray90", color = NA),
+    strip.text = element_text(face = "bold"),
+    legend.position = "top"
+  )
+
+p.temp

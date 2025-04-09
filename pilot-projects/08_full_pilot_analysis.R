@@ -1040,7 +1040,7 @@ df.salt <- df.plt[df.plt$Nitrogen.conc == 1000 & df.plt$Temperature == 30,] # pu
 p.salt <- ggplot(df.salt, aes(x = as.numeric(as.character(days)), y = RFU, color = as.factor(Microbe))) +
   geom_line(aes(group = interaction(Row, Column, Plate)), alpha = 0.7) +  # Connect points per well
   geom_point(size = 2) +
-  facet_wrap(~ Salt.conc, ncol = 5) +  # Facet by salt level across multiple panels
+  facet_wrap(~ Salt.conc, ncol = 5, scales= "free") +  # Facet by salt level across multiple panels
   scale_color_manual(
     values = c(
       "none" = "springgreen4",
@@ -1068,7 +1068,7 @@ df.nit <- df.plt[df.plt$Salt.conc == 0 & df.plt$Temperature == 30,] # pull out t
 p.nit <- ggplot(df.nit, aes(x = as.numeric(as.character(days)), y = RFU, color = as.factor(Microbe))) +
   geom_line(aes(group = interaction(Row, Column, Plate)), alpha = 0.7) +  # Connect points per well
   geom_point(size = 2) +
-  facet_wrap(~ Nitrogen.conc, ncol = 5) +  # Facet by salt level across multiple panels
+  facet_wrap(~ Nitrogen.conc, ncol = 5, scales='free') +  # Facet by salt level across multiple panels
   scale_color_manual(
     values = c(
       "none" = "springgreen4",

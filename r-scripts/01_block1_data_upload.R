@@ -1488,3 +1488,289 @@ p.n.1000
 plot_grid(p.n.0, p.n.1, p.n.5, p.n.10, p.n.25, p.n.50, p.n.100, p.n.400, p.n.700, p.n.1000, ncol = 4)
 
 ###### Salt ######
+
+df.blk1.s.C <- df.blk1 %>% 
+  filter(Nitrogen.conc.µM == 1000, Temperature.C == 30, Chlamy.y.n =='y')
+
+p.s.0 <- ggplot(df.blk1.n.C[df.blk1.n.C$Salt.conc.g.l == 0, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "0 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.0
+
+p.s.1.33 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 1.33, ], 
+                aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "1.33 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.1.33
+
+p.s.2.67 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 2.67, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "2.67 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.2.67
+
+p.s.4 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 4, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "4 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.4
+
+p.s.5.33 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 5.33 & df.blk1.s.C$RFU < 200, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "5.33 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.5.33
+
+p.s.6.67 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 6.67 & df.blk1.s.C$RFU < 120, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "6.67 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.6.67
+
+p.s.8 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 8 & df.blk1.s.C$RFU < 150, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "8 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.8
+
+p.s.9.33 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 9.33 & df.blk1.s.C$RFU < 65, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "9.33 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.9.33
+
+p.s.10.67 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 10.67 & df.blk1.s.C$RFU < 100, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "10.67 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.10.67
+
+p.s.12 <- ggplot(df.blk1.s.C[df.blk1.s.C$Salt.conc.g.l == 12 & df.blk1.s.C$RFU < 52, ], 
+                   aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "12 g/L Salt") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.s.12
+
+plot_grid(p.s.0, p.s.1.33, p.s.2.67, p.s.4, p.s.5.33, p.s.6.67, p.s.8, p.s.9.33, p.s.10.67, p.s.12, ncol = 4)
+

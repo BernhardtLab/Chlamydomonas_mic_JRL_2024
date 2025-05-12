@@ -1,6 +1,8 @@
 # Jason R Laurich
 # Apr 22, 2025
 
+# Upload and save the data from the first block of the experiment
+# Will need to add in the later reads when I'm on campus (wifi)
 
 # Load packages -----------------------------------------------------------
 
@@ -904,3 +906,9 @@ p.comp <- plot_grid(p8, p14, p20, p25, p30, p33, p35, p39, p43,
                     ncol = 5)
 
 p.comp
+
+df.blk1 <- rbind(df.8, df.14, df.20, df.25, df.30, df.33, df.35, df.39, df.43)
+
+write.csv(df.blk1, "processed-data/01_blk1_rawdata.csv") # Save raw data. This still needs some accounting (e.g. errors in the notes column)
+
+

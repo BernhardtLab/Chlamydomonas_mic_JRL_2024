@@ -135,10 +135,10 @@ for (p in 1:2){ # Plates
     file.path <- paste("raw-data/JRL_block1_", t, "_", p, "_", i, ".xlsx", sep = "")
     # t is the temp, p is the plate, i is the read
     
-    df.raw <- read_excel(file.path, range = "C48:N64")
+    df.raw <- read_excel(file.path, range = "D50:M62")
     
     df.raw <- as.data.frame(df.raw)
-    df.raw$meas <- rep(c("RFU", "OD600"),8)
+    df.raw$meas <- rep(c("RFU", "OD600"),6)
     
     RFU <- numeric()
     OD600 <- numeric()
@@ -152,7 +152,7 @@ for (p in 1:2){ # Plates
       
       x <- ceiling(j/2) # This function round all values above an integer to the next. I'll use this to only record one line for each row of wells.
       
-      for (c in 1:12){
+      for (c in 1:10){
         
         if (j == 2*x){ # Only record row and column every two rows.
           Row <- c(Row, x) # row number
@@ -197,7 +197,7 @@ for (p in 1:2){ # Plates
     df.plt$Column <- as.integer(df.plt$Column)
     
     df.plt <- df.plt %>% 
-      mutate(Well.at.T = (Plate-1)*96 + (Row-1)*12 + Column)
+      mutate(Well.at.T = (Plate-1)*60 + (Row-1)*10 + Column)
     
     df.proc <- df.plt %>%
       left_join(df.design.temp.plate, by = "Well.at.T") # This is the full data we want for each frame (don't need elapsed time)
@@ -233,10 +233,10 @@ for (p in 1:2){ # Plates
     file.path <- paste("raw-data/JRL_block1_", t, "_", p, "_", i, ".xlsx", sep = "")
     # t is the temp, p is the plate, i is the read
     
-    df.raw <- read_excel(file.path, range = "C48:N64")
+    df.raw <- read_excel(file.path, range = "D50:M62")
     
     df.raw <- as.data.frame(df.raw)
-    df.raw$meas <- rep(c("RFU", "OD600"),8)
+    df.raw$meas <- rep(c("RFU", "OD600"),6)
     
     RFU <- numeric()
     OD600 <- numeric()
@@ -250,7 +250,7 @@ for (p in 1:2){ # Plates
       
       x <- ceiling(j/2) # This function round all values above an integer to the next. I'll use this to only record one line for each row of wells.
       
-      for (c in 1:12){
+      for (c in 1:10){
         
         if (j == 2*x){ # Only record row and column every two rows.
           Row <- c(Row, x) # row number
@@ -295,7 +295,7 @@ for (p in 1:2){ # Plates
     df.plt$Column <- as.integer(df.plt$Column)
     
     df.plt <- df.plt %>% 
-      mutate(Well.at.T = (Plate-1)*96 + (Row-1)*12 + Column)
+      mutate(Well.at.T = (Plate-1)*60 + (Row-1)*10 + Column)
     
     df.proc <- df.plt %>%
       left_join(df.design.temp.plate, by = "Well.at.T") # This is the full data we want for each frame (don't need elapsed time)
@@ -331,10 +331,10 @@ for (p in 1:2){ # Plates
     file.path <- paste("raw-data/JRL_block1_", t, "_", p, "_", i, ".xlsx", sep = "")
     # t is the temp, p is the plate, i is the read
     
-    df.raw <- read_excel(file.path, range = "C48:N64")
+    df.raw <- read_excel(file.path, range = "D50:M62")
     
     df.raw <- as.data.frame(df.raw)
-    df.raw$meas <- rep(c("RFU", "OD600"),8)
+    df.raw$meas <- rep(c("RFU", "OD600"),6)
     
     RFU <- numeric()
     OD600 <- numeric()
@@ -348,7 +348,7 @@ for (p in 1:2){ # Plates
       
       x <- ceiling(j/2) # This function round all values above an integer to the next. I'll use this to only record one line for each row of wells.
       
-      for (c in 1:12){
+      for (c in 1:10){
         
         if (j == 2*x){ # Only record row and column every two rows.
           Row <- c(Row, x) # row number
@@ -393,7 +393,7 @@ for (p in 1:2){ # Plates
     df.plt$Column <- as.integer(df.plt$Column)
     
     df.plt <- df.plt %>% 
-      mutate(Well.at.T = (Plate-1)*96 + (Row-1)*12 + Column)
+      mutate(Well.at.T = (Plate-1)*60 + (Row-1)*10 + Column)
     
     df.proc <- df.plt %>%
       left_join(df.design.temp.plate, by = "Well.at.T") # This is the full data we want for each frame (don't need elapsed time)
@@ -429,10 +429,10 @@ for (p in 1:2){ # Plates
     file.path <- paste("raw-data/JRL_block1_", t, "_", p, "_", i, ".xlsx", sep = "")
     # t is the temp, p is the plate, i is the read
     
-    df.raw <- read_excel(file.path, range = "C48:N64")
+    df.raw <- read_excel(file.path, range = "D50:M62")
     
     df.raw <- as.data.frame(df.raw)
-    df.raw$meas <- rep(c("RFU", "OD600"),8)
+    df.raw$meas <- rep(c("RFU", "OD600"),6)
     
     RFU <- numeric()
     OD600 <- numeric()
@@ -446,7 +446,7 @@ for (p in 1:2){ # Plates
       
       x <- ceiling(j/2) # This function round all values above an integer to the next. I'll use this to only record one line for each row of wells.
       
-      for (c in 1:12){
+      for (c in 1:10){
         
         if (j == 2*x){ # Only record row and column every two rows.
           Row <- c(Row, x) # row number
@@ -491,7 +491,7 @@ for (p in 1:2){ # Plates
     df.plt$Column <- as.integer(df.plt$Column)
     
     df.plt <- df.plt %>% 
-      mutate(Well.at.T = (Plate-1)*96 + (Row-1)*12 + Column)
+      mutate(Well.at.T = (Plate-1)*60 + (Row-1)*10 + Column)
     
     df.proc <- df.plt %>%
       left_join(df.design.temp.plate, by = "Well.at.T") # This is the full data we want for each frame (don't need elapsed time)
@@ -527,10 +527,10 @@ for (p in 1:2){ # Plates
     file.path <- paste("raw-data/JRL_block1_", t, "_", p, "_", i, ".xlsx", sep = "")
     # t is the temp, p is the plate, i is the read
     
-    df.raw <- read_excel(file.path, range = "C48:N64")
+    df.raw <- read_excel(file.path, range = "D50:M62")
     
     df.raw <- as.data.frame(df.raw)
-    df.raw$meas <- rep(c("RFU", "OD600"),8)
+    df.raw$meas <- rep(c("RFU", "OD600"),6)
     
     RFU <- numeric()
     OD600 <- numeric()
@@ -544,7 +544,7 @@ for (p in 1:2){ # Plates
       
       x <- ceiling(j/2) # This function round all values above an integer to the next. I'll use this to only record one line for each row of wells.
       
-      for (c in 1:12){
+      for (c in 1:10){
         
         if (j == 2*x){ # Only record row and column every two rows.
           Row <- c(Row, x) # row number
@@ -589,7 +589,7 @@ for (p in 1:2){ # Plates
     df.plt$Column <- as.integer(df.plt$Column)
     
     df.plt <- df.plt %>% 
-      mutate(Well.at.T = (Plate-1)*96 + (Row-1)*12 + Column)
+      mutate(Well.at.T = (Plate-1)*60 + (Row-1)*10 + Column)
     
     df.proc <- df.plt %>%
       left_join(df.design.temp.plate, by = "Well.at.T") # This is the full data we want for each frame (don't need elapsed time)
@@ -625,10 +625,10 @@ for (p in 1:2){ # Plates
     file.path <- paste("raw-data/JRL_block1_", t, "_", p, "_", i, ".xlsx", sep = "")
     # t is the temp, p is the plate, i is the read
     
-    df.raw <- read_excel(file.path, range = "C48:N64")
+    df.raw <- read_excel(file.path, range = "D50:M62")
     
     df.raw <- as.data.frame(df.raw)
-    df.raw$meas <- rep(c("RFU", "OD600"),8)
+    df.raw$meas <- rep(c("RFU", "OD600"),6)
     
     RFU <- numeric()
     OD600 <- numeric()
@@ -642,7 +642,7 @@ for (p in 1:2){ # Plates
       
       x <- ceiling(j/2) # This function round all values above an integer to the next. I'll use this to only record one line for each row of wells.
       
-      for (c in 1:12){
+      for (c in 1:10){
         
         if (j == 2*x){ # Only record row and column every two rows.
           Row <- c(Row, x) # row number
@@ -687,7 +687,7 @@ for (p in 1:2){ # Plates
     df.plt$Column <- as.integer(df.plt$Column)
     
     df.plt <- df.plt %>% 
-      mutate(Well.at.T = (Plate-1)*96 + (Row-1)*12 + Column)
+      mutate(Well.at.T = (Plate-1)*60 + (Row-1)*10 + Column)
     
     df.proc <- df.plt %>%
       left_join(df.design.temp.plate, by = "Well.at.T") # This is the full data we want for each frame (don't need elapsed time)
@@ -723,10 +723,10 @@ for (p in 1:2){ # Plates
     file.path <- paste("raw-data/JRL_block1_", t, "_", p, "_", i, ".xlsx", sep = "")
     # t is the temp, p is the plate, i is the read
     
-    df.raw <- read_excel(file.path, range = "C48:N64")
+    df.raw <- read_excel(file.path, range = "D50:M62")
     
     df.raw <- as.data.frame(df.raw)
-    df.raw$meas <- rep(c("RFU", "OD600"),8)
+    df.raw$meas <- rep(c("RFU", "OD600"),6)
     
     RFU <- numeric()
     OD600 <- numeric()
@@ -740,7 +740,7 @@ for (p in 1:2){ # Plates
       
       x <- ceiling(j/2) # This function round all values above an integer to the next. I'll use this to only record one line for each row of wells.
       
-      for (c in 1:12){
+      for (c in 1:10){
         
         if (j == 2*x){ # Only record row and column every two rows.
           Row <- c(Row, x) # row number
@@ -785,7 +785,7 @@ for (p in 1:2){ # Plates
     df.plt$Column <- as.integer(df.plt$Column)
     
     df.plt <- df.plt %>% 
-      mutate(Well.at.T = (Plate-1)*96 + (Row-1)*12 + Column)
+      mutate(Well.at.T = (Plate-1)*60 + (Row-1)*10 + Column)
     
     df.proc <- df.plt %>%
       left_join(df.design.temp.plate, by = "Well.at.T") # This is the full data we want for each frame (don't need elapsed time)
@@ -821,10 +821,19 @@ for (p in 1:32){ # Plates
     file.path <- paste("raw-data/JRL_block1_", t, "_", p, "_", i, ".xlsx", sep = "")
     # t is the temp, p is the plate, i is the read
     
-    df.raw <- read_excel(file.path, range = "C48:N64")
+    df.raw <- read_excel(file.path, range = "D50:M62")
+    
+    # Try to read the file; if error, skip to next i
+    df.raw <- tryCatch({
+      read_excel(file.path, range = "D50:M62") %>%
+        as.data.frame()
+    }, error = function(e) {
+      message(paste("File missing:", file.path, " - skipping"))
+      next
+    })
     
     df.raw <- as.data.frame(df.raw)
-    df.raw$meas <- rep(c("RFU", "OD600"),8)
+    df.raw$meas <- rep(c("RFU", "OD600"),6)
     
     RFU <- numeric()
     OD600 <- numeric()
@@ -838,7 +847,7 @@ for (p in 1:32){ # Plates
       
       x <- ceiling(j/2) # This function round all values above an integer to the next. I'll use this to only record one line for each row of wells.
       
-      for (c in 1:12){
+      for (c in 1:10){
         
         if (j == 2*x){ # Only record row and column every two rows.
           Row <- c(Row, x) # row number
@@ -883,7 +892,7 @@ for (p in 1:32){ # Plates
     df.plt$Column <- as.integer(df.plt$Column)
     
     df.plt <- df.plt %>% 
-      mutate(Well.at.T = (Plate-1)*96 + (Row-1)*12 + Column)
+      mutate(Well.at.T = (Plate-1)*60 + (Row-1)*10 + Column)
     
     df.proc <- df.plt %>%
       left_join(df.design.temp.plate, by = "Well.at.T") # This is the full data we want for each frame (don't need elapsed time)
@@ -928,7 +937,10 @@ df.blk1 <- df.blk1 %>%
                                "none", "1", "2", "3", "4", "5", "6", "7", "8", 
                                "9", "10", "11", "12", "13", "14", "15", "all"))
 
-p8.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 8, ], 
+df.blk1.C <- df.blk1 %>%
+  filter(Chlamy.y.n == 'y')
+
+p8.2 <- ggplot(df.blk1.C[df.blk1.C$Temperature.C == 8, ], 
                aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -956,7 +968,7 @@ p8.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 8, ],
   
 p8.2
 
-p14.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 14, ], 
+p14.2 <- ggplot(df.blk1.C[df.blk1.C$Temperature.C == 14, ], 
                aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -984,7 +996,7 @@ p14.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 14, ],
 
 p14.2
 
-p20.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 20, ], 
+p20.2 <- ggplot(df.blk1.C[df.blk1.C$Temperature.C == 20, ], 
                aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -1012,7 +1024,7 @@ p20.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 20, ],
 
 p20.2
 
-p25.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 25, ], 
+p25.2 <- ggplot(df.blk1.C[df.blk1.C$Temperature.C == 25, ], 
                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -1040,7 +1052,7 @@ p25.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 25, ],
 
 p25.2
 
-p33.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 33, ], 
+p33.2 <- ggplot(df.blk1.C[df.blk1.C$Temperature.C == 33, ], 
                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -1068,7 +1080,7 @@ p33.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 33, ],
 
 p33.2
 
-p35.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 35, ], 
+p35.2 <- ggplot(df.blk1.C[df.blk1.C$Temperature.C == 35, ], 
                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -1096,7 +1108,7 @@ p35.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 35, ],
 
 p35.2
 
-p39.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 39, ], 
+p39.2 <- ggplot(df.blk1.C[df.blk1.C$Temperature.C == 39, ], 
                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -1124,7 +1136,7 @@ p39.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 39, ],
 
 p39.2
 
-p43.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 43, ], 
+p43.2 <- ggplot(df.blk1.C[df.blk1.C$Temperature.C == 43, ], 
                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -1152,10 +1164,10 @@ p43.2 <- ggplot(df.blk1[df.blk1$Temperature.C == 43, ],
 
 p43.2
 
-df.blk1.t <- df.blk1 %>% 
+df.blk1.C.t <- df.blk1.C %>% 
   filter(Nitrogen.conc.µM == 1000, Salt.conc.g.l == 0)
 
-p30.2 <- ggplot(df.blk1.t[df.blk1.t$Temperature.C == 30, ], 
+p30.2 <- ggplot(df.blk1.C.t[df.blk1.C.t$Temperature.C == 30, ], 
                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
   geom_line(alpha = 0.9, linewidth = 1) +
   theme_classic() +
@@ -1182,3 +1194,297 @@ p30.2 <- ggplot(df.blk1.t[df.blk1.t$Temperature.C == 30, ],
   )
 
 p30.2
+
+p.comp.2 <- plot_grid(p8.2, p14.2, p20.2, p25.2, p30.2, p33.2, p35.2, p39.2, p43.2,
+                    ncol = 3)
+
+p.comp.2
+
+###### Nitrogen ######
+
+df.blk1.n.C <- df.blk1 %>% 
+  filter(Salt.conc.g.l == 0, Temperature.C == 30, Chlamy.y.n =='y')
+
+p.n.0 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 0 & df.blk1.n.C$RFU < 250, ], 
+                aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "0 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.0
+
+p.n.1 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 1 & df.blk1.n.C$RFU < 150,], 
+                aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "1 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.1
+
+p.n.5 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 5 & df.blk1.n.C$RFU <300, ], 
+                aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "5 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.5
+
+p.n.10 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 10 & df.blk1.n.C$RFU < 1000, ], 
+                aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "10 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.10
+
+p.n.25 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 25, ], 
+                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "25 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.25
+
+p.n.50 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 50, ], 
+                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "50 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.50
+
+p.n.100 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 100, ], 
+                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "100 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.100
+
+p.n.400 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 400, ], 
+                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "400 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.400
+
+p.n.700 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 700, ], 
+                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "700 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.700
+
+p.n.1000 <- ggplot(df.blk1.n.C[df.blk1.n.C$Nitrogen.conc.µM == 1000, ], 
+                 aes(x = days, y = RFU, group = Well.at.T, colour = Microbe)) +
+  geom_line(alpha = 0.9, linewidth = 1) +
+  theme_classic() +
+  labs(title = "1000 µM N") +
+  scale_color_manual(
+    name = "Microbial treatment",  # Update the legend title
+    values = c("none" = "black",
+               "1" = "mediumorchid4",
+               "2" = "magenta2",
+               "3" = "tan",
+               "4" = "turquoise1",
+               "5" = "dodgerblue",
+               "6" = "royalblue4",  
+               "7" = "blue",
+               "8" = "deeppink",
+               "9" = "darkorange2",
+               "10" = "orange",
+               "11" = "firebrick",
+               "12" = "orangered2",
+               "13" = "red1",  
+               "14" = "forestgreen",
+               "15" = "darkolivegreen2",
+               "all" = "goldenrod1")
+  )
+
+p.n.1000
+
+plot_grid(p.n.0, p.n.1, p.n.5, p.n.10, p.n.25, p.n.50, p.n.100, p.n.400, p.n.700, p.n.1000, ncol = 4)
+
+###### Salt ######

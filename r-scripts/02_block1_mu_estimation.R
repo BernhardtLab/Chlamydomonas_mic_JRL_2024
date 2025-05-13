@@ -36,7 +36,7 @@ df.N <- df %>%
   filter(Chlamy.y.n == 'y', Salt.conc.g.l == 0, Temperature.C == 30)
 
 df.S <- df %>% 
-  filter(Chlamy.y.n == 'y', Nitrogen.conc.µM == 100, Temperature.C == 30)
+  filter(Chlamy.y.n == 'y', Nitrogen.conc.µM == 1000, Temperature.C == 30)
 
 # Temperature -------------------------------------------------------------
 

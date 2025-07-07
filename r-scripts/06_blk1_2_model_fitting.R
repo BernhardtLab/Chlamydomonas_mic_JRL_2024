@@ -281,8 +281,8 @@ for (i in unique(df.s$blk.mic)[1:length(unique(df.s$blk.mic))]){ # For each uniq
   
   print(paste("Done", i))
   
-  df.jags <- data.frame(salt_jag$BUGSoutput$summary)[-c(1:3, 485),]   # generate the sequence of r.pred values
-  df.jags.plot$salt <- seq(0, 12, 0.025)
+  df.jags <- data.frame(salt_jag$BUGSoutput$summary)[-c(1:4, 486),]   # generate the sequence of r.pred values
+  df.jags$salt <- seq(0, 12, 0.025)
 
   blk1.2.salt.summ.df <- rbind(blk1.2.salt.summ.df, data.frame(                                         # Add summary data
     Block = df.i$block[1],                                                                                    # Block

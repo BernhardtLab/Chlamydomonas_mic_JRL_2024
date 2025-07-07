@@ -1,8 +1,8 @@
 # Jason R Laurich
-# May 12th, 2025
+# July 7th, 2025
 
 # Going to estimate exponential growth rate (µ) for each well of the first block of my Chlamydomonas x microbes x global change
-# experiment (Spring 2025)
+# experiment (Spring 2025, block 2 - no carbon added to the wells)
 
 
 # Load packages -----------------------------------------------------------
@@ -16,7 +16,7 @@ library(forcats)
 
 # Load data ---------------------------------------------------------------
 
-df <- read.csv("processed-data/01_blk1_rawdata.csv") # Get the experimental design file.
+df <- read.csv("processed-data/03_blk2_rawdata.csv") # Get the experimental design file.
 
 df$Microbe <- as.factor(df$Microbe)
 levels(df$Microbe) # Right so we have BLANK in there as an extra factor level. That's fine.
@@ -29,7 +29,7 @@ df <- df %>%
                                "9", "10", "11", "12", "13", "14", "15", "all")) %>% 
   mutate(well.ID = paste(Plate, Row, Column, sep = ".")) %>% 
   mutate(logRFU = log(RFU + 0.0001)) # Let's reorder and clean these out
- 
+
 df.T <- df %>% 
   filter(Chlamy.y.n == 'y', Salt.conc.g.l == 0, Nitrogen.conc.µM == 1000) 
 
@@ -132,7 +132,7 @@ for (i in levels(df.T$Microbe)){
   
 }
 
-write.csv(df.r.exp.t, "processed-data/2a_blk1_temp_mus.csv") # let's save the file.
+write.csv(df.r.exp.t, "processed-data/4a_blk2_temp_mus.csv") # let's save the file.
 
 # Nitrogen ----------------------------------------------------------------
 
@@ -227,7 +227,7 @@ for (i in levels(df.N$Microbe)){
   
 }
 
-write.csv(df.r.exp.n, "processed-data/2b_blk1_nit_mus.csv") # let's save the file.
+write.csv(df.r.exp.n, "processed-data/4b_blk2_nit_mus.csv") # let's save the file.
 
 # Salt --------------------------------------------------------------------
 
@@ -322,5 +322,5 @@ for (i in levels(df.S$Microbe)){
   
 }
 
-write.csv(df.r.exp.s, "processed-data/2c_blk1_salt_mus.csv") # let's save the file.
+write.csv(df.r.exp.s, "processed-data/4c_blk2_salt_mus.csv") # let's save the file.
 

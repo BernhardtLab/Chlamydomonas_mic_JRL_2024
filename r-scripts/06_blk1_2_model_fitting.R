@@ -91,6 +91,16 @@ blk1.2.tpc.summ.df <- data.frame(  # We'll create a dataframe to store the data 
   stringsAsFactors = FALSE         # Avoid factor conversion
 )
 
+fit.df <- data.frame(       # Save model fit estimates for examination
+  Block = numeric(),        # Block
+  Mic = character(),        # Mic
+  Parameter = character(),  # Model parameter (e.g. cf.a, cf.tmax, etc.)
+  mean = numeric(),         # Posterior mean
+  Rhat = numeric(),         # Rhat values
+  n.eff = numeric(),        # Sample size estimates (should be ~6000)
+  stringsAsFactors = FALSE            
+)
+
 # Let's do larger models for the final things (10 times larger)
 ni.fit <- 220000    # iterations / chain
 nb.fit <- 20000     # burn in periods for each chain
@@ -109,7 +119,7 @@ inits.lactin.cust<- function() { # Pulling initial values centres from the start
   )
 }
 
-for (i in unique(df.t$blk.mic)[32:length(unique(df.t$blk.mic))]){ # For each unique block x mic combo
+for (i in unique(df.t$blk.mic)[3:length(unique(df.t$blk.mic))]){ # For each unique block x mic combo
   
   df.i <- df.t %>%
     filter(blk.mic == i, !is.na(r.exp)) %>%
@@ -155,9 +165,26 @@ for (i in unique(df.t$blk.mic)[32:length(unique(df.t$blk.mic))]){ # For each uni
     T.opt.raw = df.jags$temp[which.max(df.jags$mean)],          # Optimal T
     r.max.raw = max(df.jags$mean)                               # Maximum growth rate   
   ))
+  
+  for (j in 1:6){
+    fit.df <- rbind(fit.df, data.frame(                         # Model performance data
+      Block = df.i$block[1],                                    # Block
+      Mic = df.i$mic[1],                                        # Mic
+      Parameter = rownames(lac_jag$BUGSoutput$summary)[j],      # Model parameter (e.g. cf.a, cf.tmax, etc.)
+      mean = lac_jag$BUGSoutput$summary[j,1],                   # Posterior mean
+      Rhat = lac_jag$BUGSoutput$summary[j,8],                   # Rhat values
+      n.eff = lac_jag$BUGSoutput$summary[j,9],                  # Sample size estimates (should be ~6000)
+      stringsAsFactors = FALSE            
+    ))
+  }
+
 }
 
+blk1.2.tpc.summ.df
+nrow(blk1.2.tpc.summ.df)
+
 write.csv(blk1.2.tpc.summ.df, "processed-data/5a_blocks1.2_TPC_stats.csv") # save the file.
+write.csv(fit.df, "processed-data/5b_block1.2_TPC_fits.csv")
 
 # Nitrogen Monod curves ---------------------------------------------------
 
@@ -225,7 +252,7 @@ for (i in unique(df.n$blk.mic)[1:length(unique(df.n$blk.mic))]){ # For each uniq
   ))
 }
 
-write.csv(blk1.2.n.monod.summ.df, "processed-data/5b_blocks1.2_N_monod_stats") # save the file.
+write.csv(blk1.2.n.monod.summ.df, "processed-data/5b_blocks1.2_N_monod_stats.csv") # save the file.
 
 # Salt tolerance reversed logisitic growth curves -------------------------
 
@@ -294,6 +321,6 @@ for (i in unique(df.s$blk.mic)[1:length(unique(df.s$blk.mic))]){ # For each uniq
 
 }
 
-write.csv(blk1.2.salt.summ.df, "processed-data/5c_blocks1.2_salt_stats") # save the file.
+write.csv(blk1.2.salt.summ.df, "processed-data/5c_blocks1.2_salt_stats.csv") # save the file.
 
 

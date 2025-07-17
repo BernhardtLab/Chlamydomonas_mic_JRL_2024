@@ -1,8 +1,8 @@
 # Jason R Laurich
 
-# July 7th, 2025
+# July 14th, 2025
 
-# Going to fit TPCs, Monod curves and salt tolerance curves to data from block 1 (carbon added) and 2 (no carbon)
+# Going to fit TPCs, Monod curves and salt tolerance curves to data from block 1 (carbon added) and 2 (no carbon) for microbes
 
 # Load packages -----------------------------------------------------------
 
@@ -20,34 +20,20 @@ library(nls.multstart)
 
 ### Temperature data ### 
 
-df.t1 <- read.csv("processed-data/2a_blk1_temp_mus.csv") # block 1, temp
-df.t1$block <- 1
-
-df.t2 <- read.csv("processed-data/4a_blk2_temp_mus.csv") # block 2, temp
-df.t2$block <- 2
-
-df.t <- rbind(df.t1, df.t2)
-
+df.t <- read.csv("processed-data/6a_blk1.2_mic_temp_mus.csv") 
 df.t$mic <- as.factor(df.t$mic)
 
 df.t <- df.t %>% 
   filter(mic != 'BLANK') %>%
   droplevels() %>%
   mutate(mic = fct_relevel(mic, 
-                               "none", "1", "2", "3", "4", "5", "6", "7", "8", 
-                               "9", "10", "11", "12", "13", "14", "15", "all")) %>% 
-  mutate(blk.mic = paste0(block, mic))
+                           "none", "1", "2", "3", "4", "5", "6", "7", "8", 
+                           "9", "10", "11", "12", "13", "14", "15", "all")) %>% 
+  mutate(blk.mic = paste(block, mic, Chlamy, sep = "."))
 
 ### Nitrogen data ### 
 
-df.n1 <- read.csv("processed-data/2b_blk1_nit_mus.csv") # block 1, nit
-df.n1$block <- 1
-
-df.n2 <- read.csv("processed-data/4b_blk2_nit_mus.csv") # block 2, nit
-df.n2$block <- 2
-
-df.n <- rbind(df.n1, df.n2)
-
+df.n <- read.csv("processed-data/6b_blk1.2_mic_nit_mus.csv") 
 df.n$mic <- as.factor(df.n$mic)
 
 df.n <- df.n %>% 
@@ -56,18 +42,11 @@ df.n <- df.n %>%
   mutate(mic = fct_relevel(mic, 
                            "none", "1", "2", "3", "4", "5", "6", "7", "8", 
                            "9", "10", "11", "12", "13", "14", "15", "all")) %>% 
-  mutate(blk.mic = paste0(block, mic))
+  mutate(blk.mic = paste(block, mic, Chlamy, sep = "."))
 
 ### Salt data ###
 
-df.s1 <- read.csv("processed-data/2c_blk1_salt_mus.csv") # block 1, salt
-df.s1$block <- 1
-
-df.s2 <- read.csv("processed-data/4c_blk2_salt_mus.csv") # block 2, salt
-df.s2$block <- 2
-
-df.s <- rbind(df.s1, df.s2)
-
+df.s <- read.csv("processed-data/6c_blk1.2_mic_salt_mus.csv") 
 df.s$mic <- as.factor(df.s$mic)
 
 df.s <- df.s %>% 
@@ -76,13 +55,14 @@ df.s <- df.s %>%
   mutate(mic = fct_relevel(mic, 
                            "none", "1", "2", "3", "4", "5", "6", "7", "8", 
                            "9", "10", "11", "12", "13", "14", "15", "all")) %>% 
-  mutate(blk.mic = paste0(block, mic))
+  mutate(blk.mic = paste(block, mic, Chlamy, sep = "."))
 
 # Fit TPCs ----------------------------------------------------------------
 
 blk1.2.tpc.summ.df <- data.frame(  # We'll create a dataframe to store the data as we fit models.
   Block = numeric(),               # Block
   Mic = character(),               # Mic
+  Chlamy = character(),            # Chlamy present?
   T.min.raw = numeric(),           # Minimum T (Jags raw)
   T.max.raw = numeric(),           # Maximum T (Jags raw)
   T.opt.raw = numeric(),           # Optimal T (Jags raw)
@@ -94,6 +74,7 @@ blk1.2.tpc.summ.df <- data.frame(  # We'll create a dataframe to store the data 
 fit.df <- data.frame(       # Save model fit estimates for examination
   Block = numeric(),        # Block
   Mic = character(),        # Mic
+  Chlamy = character(),            # Chlamy present?
   Parameter = character(),  # Model parameter (e.g. cf.a, cf.tmax, etc.)
   mean = numeric(),         # Posterior mean
   Rhat = numeric(),         # Rhat values
@@ -119,7 +100,9 @@ inits.lactin.cust<- function() { # Pulling initial values centres from the start
   )
 }
 
-for (i in unique(df.t$blk.mic)[33:length(unique(df.t$blk.mic))]){ # For each unique block x mic combo
+#### Start here ####
+
+for (i in unique(df.t$blk.mic)[2:length(unique(df.t$blk.mic))]){ # For each unique block x mic combo x chlamy
   
   df.i <- df.t %>%
     filter(blk.mic == i, !is.na(r.exp)) %>%
@@ -137,18 +120,36 @@ for (i in unique(df.t$blk.mic)[33:length(unique(df.t$blk.mic))]){ # For each uni
   
   start.vals.lac <- get_start_vals(df.i$temp, df.i$r.exp, model_name = 'lactin2_1995')
   
-  lac_jag <- jags(
-    data = jag.data, 
-    inits = inits.lactin.cust, 
-    parameters.to.save = parameters.lactin2, 
-    model.file = "lactin2_flex.txt",
-    n.thin = nt.fit, 
-    n.chains = nc.fit, 
-    n.burnin = nb.fit, 
-    n.iter = ni.fit, 
-    DIC = TRUE, 
-    working.directory = getwd()
-  ) # ~ 10 min to run?
+  fit_success <- FALSE
+  attempt <- 1
+  
+  while (!fit_success && attempt <= 5) {
+    try_result <- tryCatch({
+      lac_jag <- jags(
+        data = jag.data, 
+        inits = inits.lactin.cust, 
+        parameters.to.save = parameters.lactin2, 
+        model.file = "lactin2_flex.txt",
+        n.thin = nt.fit, 
+        n.chains = nc.fit, 
+        n.burnin = nb.fit, 
+        n.iter = ni.fit, 
+        DIC = TRUE, 
+        working.directory = getwd()
+      )
+      fit_success <- TRUE
+      lac_jag
+    }, error = function(e) {
+      message(paste("Attempt", attempt, "failed with error:", conditionMessage(e)))
+      attempt <<- attempt + 1
+      NULL
+    })
+  }
+  
+  if (!fit_success) {
+    warning(paste("Model fitting failed after 5 attempts for", i))
+    next  # Skip to the next blk.mic if all attempts fail
+  }
   
   print(paste("Done", i))
   
@@ -158,6 +159,7 @@ for (i in unique(df.t$blk.mic)[33:length(unique(df.t$blk.mic))]){ # For each uni
   blk1.2.tpc.summ.df <- rbind(blk1.2.tpc.summ.df, data.frame(   # Add summary data
     Block = df.i$block[1],                                      # Block
     Mic = df.i$mic[1],                                          # Mic
+    Chlamy = df.i$Chlamy[1],                                    # Chlamy present?
     T.min.raw = df.jags$temp[min(which(df.jags$mean > 0))],     # Minimum T
     T.max.raw = df.jags$temp[max(which(df.jags$mean > 0))],     # Maximum T
     T.br.raw = df.jags$temp[max(which(df.jags$mean > 0.5))] - 
@@ -170,6 +172,7 @@ for (i in unique(df.t$blk.mic)[33:length(unique(df.t$blk.mic))]){ # For each uni
     fit.df <- rbind(fit.df, data.frame(                         # Model performance data
       Block = df.i$block[1],                                    # Block
       Mic = df.i$mic[1],                                        # Mic
+      Chlamy = df.i$Chlamy[1],                                  # Chlamy present?
       Parameter = rownames(lac_jag$BUGSoutput$summary)[j],      # Model parameter (e.g. cf.a, cf.tmax, etc.)
       mean = lac_jag$BUGSoutput$summary[j,1],                   # Posterior mean
       Rhat = lac_jag$BUGSoutput$summary[j,8],                   # Rhat values
@@ -177,81 +180,100 @@ for (i in unique(df.t$blk.mic)[33:length(unique(df.t$blk.mic))]){ # For each uni
       stringsAsFactors = FALSE            
     ))
   }
-
+  
 }
 
-write.csv(blk1.2.tpc.summ.df, "processed-data/5a_blocks1.2_TPC_stats.csv") # save the file.
-write.csv(fit.df, "processed-data/5b_block1.2_TPC_fits.csv")
+write.csv(blk1.2.tpc.summ.df, "processed-data/7a_blocks1.2_mic_TPC_stats.csv") # save the file.
+write.csv(fit.df, "processed-data/7b_block1.2_mic_TPC_fits.csv")
 
-# Nitrogen Monod curves ---------------------------------------------------
 
-inits.monod <- function() { # Set the initial values for our Monod curve
+# Nitrogen Monods ---------------------------------------------------------
+
+inits.monod <- function() {
   list(
-    r_max = runif(1, 0.1, 5), # Initial guess for r_max
-    K_s = runif(1, 0.1, 5),   # Initial guess for K_s
-    sigma = runif(1, 0.1, 1)  # Initial guess for error
+    r_max = runif(1, 0.1, 5),
+    K_s = runif(1, 0.1, 5),
+    sigma = runif(1, 0.1, 1)
   )
 }
 
-parameters.monod <- c("r_max", "K_s", "sigma", "r_pred_new") # Save these
+parameters.monod <- c("r_max", "K_s", "sigma", "r_pred_new")
 
-blk1.2.n.monod.summ.df <- data.frame(  # We'll create a dataframe to store the data as we fit models.
-  Block = numeric(),                 # Block
-  Mic = character(),                 # Mic
-  K.s = numeric(),                   # Half-saturation constant
-  r.max = numeric(),                 # Maximum population growth rate
-  R.jag = numeric(),                 # Minimum resource requirement for positive growth (from jags model)
-  R.mth = numeric(),                 # Minimum resource requirement for positive growth (analytical solution, R* = m*ks/(rmax-m))
-  stringsAsFactors = FALSE           # Avoid factor conversion
+blk1.2.n.monod.summ.df <- data.frame(
+  Block = numeric(),
+  Mic = character(),
+  Chlamy = character(),
+  K.s = numeric(),
+  r.max = numeric(),
+  R.jag = numeric(),
+  R.mth = numeric(),
+  stringsAsFactors = FALSE
 )
 
-for (i in unique(df.n$blk.mic)[1:length(unique(df.n$blk.mic))]){ # For each unique block x mic combo
+for (i in unique(df.n$blk.mic)) {
   
   df.i <- df.n %>%
     filter(blk.mic == i, !is.na(r.exp)) %>%
     arrange(nit)
   
-  trait <- df.i$r.exp    # format the data for jags
+  # Prep data for JAGS
+  trait <- df.i$r.exp
   N.obs <- length(trait)
-  
-  S.pred <- seq(0, 1000, 1) # Nitrogen gradient we're interested in - upped the granularity here
-  N.S.pred <-length(S.pred) # We'll reset this internally since the gradient varies substantially
-  
+  S.pred <- seq(0, 1000, 1)
+  N.S.pred <- length(S.pred)
   nit <- df.i$nit
-  
   jag.data <- list(trait = trait, N.obs = N.obs, S = nit, S.pred = S.pred, N.S.pred = N.S.pred)
   
-  monod_jag <- jags( # Run the light Monod function. 
-    data = jag.data,
-    inits = inits.monod,
-    parameters.to.save = parameters.monod,
-    model.file = "monod.txt",
-    n.thin = nt.fit,
-    n.chains = nc.fit,
-    n.burnin = nb.fit,
-    n.iter = ni.fit,
-    DIC = TRUE,
-    working.directory = getwd()
-  )
+  # Retry up to 5 times
+  success <- FALSE
+  for (attempt in 1:5) {
+    tryCatch({
+      monod_jag <- jags(
+        data = jag.data,
+        inits = inits.monod,
+        parameters.to.save = parameters.monod,
+        model.file = "monod.txt",
+        n.thin = nt.fit,
+        n.chains = nc.fit,
+        n.burnin = nb.fit,
+        n.iter = ni.fit,
+        DIC = TRUE,
+        working.directory = getwd()
+      )
+      success <- TRUE
+      break
+    }, error = function(e) {
+      message(paste("Attempt", attempt, "failed for", i, ":", e$message))
+    })
+  }
   
-  print(paste("Done", i))
+  if (!success) {
+    message(paste("All attempts failed for", i))
+    next
+  }
   
-  df.jags <- data.frame(monod_jag$BUGSoutput$summary)[-c(1:3, 1005),]   # generate the sequence of r.pred values
-  df.jags$nit <- seq(0, 1000, 1)
+  # Process successful output
+  df.jags <- data.frame(monod_jag$BUGSoutput$summary)[-c(1:3, 1005), ]
+  df.jags$nit <- S.pred
   
-  blk1.2.n.monod.summ.df <- rbind(blk1.2.n.monod.summ.df, data.frame(                         # Add summary data
-    Block = df.i$block[1],                                                                    # Block
-    Mic = df.i$mic[1],                                                                        # Mic
-    K.s = monod_jag$BUGSoutput$summary[1,1],                                                  # Half-saturation constant
-    r.max = monod_jag$BUGSoutput$summary[3,1],                                                # Maximum population growth rate
-    R.jag = df.jags$nit[which(df.jags$mean > 0.5)[1]],                                        # Minimum resource requirement for positive growth (from jags model)
-    R.mth = 0.5*monod_jag$BUGSoutput$summary[1,1]/(monod_jag$BUGSoutput$summary[3,1] - 0.5)   # Minimum resource requirement for positive growth (from math)
+  blk1.2.n.monod.summ.df <- rbind(blk1.2.n.monod.summ.df, data.frame(
+    Block = df.i$block[1],
+    Mic = df.i$mic[1],
+    Chlamy = df.i$Chlamy[1],
+    K.s = monod_jag$BUGSoutput$summary["K_s", "mean"],
+    r.max = monod_jag$BUGSoutput$summary["r_max", "mean"],
+    R.jag = df.jags$nit[which(df.jags$mean > 0.5)[1]],
+    R.mth = 0.5 * monod_jag$BUGSoutput$summary["K_s", "mean"] /
+      (monod_jag$BUGSoutput$summary["r_max", "mean"] - 0.5)
   ))
+  
+  message(paste("Done", i))
 }
 
-write.csv(blk1.2.n.monod.summ.df, "processed-data/5c_blocks1.2_N_monod_stats.csv") # save the file.
+write.csv(blk1.2.n.monod.summ.df, "processed-data/7c_blocks1.2_N_monod_stats.csv", row.names = FALSE)
 
-# Salt tolerance reversed logisitic growth curves -------------------------
+
+# Salt --------------------------------------------------------------------
 
 inits.salt <- function() {
   list(
@@ -264,33 +286,34 @@ inits.salt <- function() {
 
 parameters.salt <- c("a", "b", "c", "sigma", "r_pred_new") # Save these
 
-blk1.2.salt.summ.df <- data.frame(  # We'll create a dataframe to store the data as we fit models.
-  Block = numeric(),                # Block
-  Mic = character(),                # Mic
+blk1.2.s.salt.summ.df <- data.frame(
+  Block = numeric(),
+  Mic = character(),
+  Chlamy = character(),
   r.max = numeric(),                # Maximum population growth rate (alpha)
   c.mod = numeric(),                # salt concentration at which r is half of alpha (extracted from model)
   c.pred = numeric(),               # salt concentration at which r is half of alpha (extracted from predicted values)
   stringsAsFactors = FALSE          # Avoid factor conversion
 )
 
-fit.df <- data.frame(       # Save model fit estimates for examination
-  Block = numeric(),        # Block
-  Mic = character(),        # Mic      
+fit.df <- data.frame(
+  Block = numeric(),
+  Mic = character(),
+  Chlamy = character(),
   Parameter = character(),  # Model parameter (e.g. K_s, r_max, etc.)
   mean = numeric(),         # Posterior mean
   Rhat = numeric(),         # Rhat values
   n.eff = numeric(),        # Sample size estimates (should be ~6000)
-  stringsAsFactors = FALSE            
+  stringsAsFactors = FALSE      
 )
 
-
-for (i in unique(df.s$blk.mic)[1:length(unique(df.s$blk.mic))]){ # For each unique block x mic combo
+for (i in unique(df.s$blk.mic)) {
   
   df.i <- df.s %>%
     filter(blk.mic == i, !is.na(r.exp)) %>%
     arrange(salt)
   
-  trait <- df.i$r.exp    # format the data for jags
+  trait <- df.i$r.exp
   N.obs <- length(trait)
   
   S.pred <- seq(0, 12, 0.025) # Salt gradient we are interested in we'll keep N.S.pred more or less consistent across abiotic gradients for now
@@ -300,27 +323,40 @@ for (i in unique(df.s$blk.mic)[1:length(unique(df.s$blk.mic))]){ # For each uniq
   
   jag.data <- list(trait = trait, N.obs = N.obs, S = salt, S.pred = S.pred, N.S.pred = N.S.pred)
   
-  salt_jag <- jags( # Run the salt logistic growth curve function. 
-    data = jag.data,
-    inits = inits.salt,
-    parameters.to.save = parameters.salt,
-    model.file = "salt.tol.txt",
-    n.thin = nt.fit,
-    n.chains = nc.fit,
-    n.burnin = nb.fit,
-    n.iter = ni.fit,
-    DIC = TRUE,
-    working.directory = getwd()
-  )
+  success <- FALSE
+  for (attempt in 1:5) {
+    tryCatch({
+      salt_jag <- jags(
+        data = jag.data,
+        inits = inits.salt,
+        parameters.to.save = parameters.salt,
+        model.file = "salt.tol.txt",
+        n.thin = nt.fit,
+        n.chains = nc.fit,
+        n.burnin = nb.fit,
+        n.iter = ni.fit,
+        DIC = TRUE,
+        working.directory = getwd()
+      )
+      success <- TRUE
+      break
+    }, error = function(e) {
+      message(paste("Attempt", attempt, "failed for", i, ":", e$message))
+    })
+  }
   
-  print(paste("Done", i))
+  if (!success) {
+    message(paste("All attempts failed for", i))
+    next
+  }
   
   df.jags <- data.frame(salt_jag$BUGSoutput$summary)[-c(1:4, 486),]   # generate the sequence of r.pred values
   df.jags$salt <- seq(0, 12, 0.025)
-
-  blk1.2.salt.summ.df <- rbind(blk1.2.salt.summ.df, data.frame(                                     # Add summary data
-    Block = df.i$block[1],                                                                          # Block
-    Mic = df.i$mic[1],                                                                              # Mic
+  
+  blk1.2.s.salt.summ.df <- rbind(blk1.2.s.salt.summ.df, data.frame(
+    Block = df.i$block[1],
+    Mic = df.i$mic[1],
+    Chlamy = df.i$Chlamy[1],
     r.max = salt_jag$BUGSoutput$summary[1,1],                                                       # Maximum population growth rate
     c.mod = salt_jag$BUGSoutput$summary[3,1],                                                       # salt concentration at which r is half of alpha (extracted from model)
     c.pred = df.jags$salt[which.min(abs(df.jags$mean - (salt_jag$BUGSoutput$summary[1,1] / 2)))]   # salt concentration at which r is half of alpha (extracted from predicted values)                                                   
@@ -331,17 +367,19 @@ for (i in unique(df.s$blk.mic)[1:length(unique(df.s$blk.mic))]){ # For each uniq
   for (j in 1:4){
     fit.df <- rbind(fit.df, data.frame(        # Model performance data
       Block = df.i$block[1],                   # Block
-      Mic = df.i$mic[1],                       # Mic    
+      Mic = df.i$mic[1],                       # Mic 
+      Chlamy = df.i$Chlamy[1],
       Parameter = rownames(salt_sum)[j],       # Model parameter (e.g. K_s, r_max, etc.)
       mean = salt_sum[j,1],                    # Posterior mean
       Rhat = salt_sum[j,8],                    # Rhat values
       n.eff = salt_sum[j,9],                   # Sample size estimates (should be ~6000)
       stringsAsFactors = FALSE            
     ))
+  
   }
-
+  
+  message(paste("Done", i))
 }
 
-write.csv(blk1.2.salt.summ.df, "processed-data/5d_blocks1.2_salt_stats.csv") # save the file.
-write.csv(fit.df, "processed-data/5e_blocks1.2_salt_fits.csv") # save the file.
-
+write.csv(blk1.2.s.salt.summ.df, "processed-data/7d_blocks1.2_salt_stats.csv", row.names = FALSE)
+write.csv(fit.df, "processed-data/7e_blocks1.2_salt_fits.csv", row.names = FALSE)

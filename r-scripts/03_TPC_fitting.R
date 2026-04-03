@@ -15,7 +15,6 @@ library(Deriv)
 library(car)
 library(boot)
 library(minpack.lm)
-library(bayestestR)
 
 lactin2 <- function(temp, a, tmax, d.t, b) { 
   exp(a * temp) - exp(a * tmax - (tmax - temp) / d.t) + b
@@ -135,7 +134,7 @@ for (i in unique(df.c.t$rep.id[df.c.t$rep.id >= 1])) { # for each replicate ID. 
                            start_lower = c(0.01, -2.5, 36, 1),
                            start_upper = c(0.19, -0.5, 44, 5),
                            lower = c(0, -3, 30, 0.1),
-                           upper = c(0.5, -0.001, 50, 6),
+                           upper = c(0.5, -0.001, 50, 10),
                            supp_errors = 'Y',
                            convergence_count = FALSE
   )

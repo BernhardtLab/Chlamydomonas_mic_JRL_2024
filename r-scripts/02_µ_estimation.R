@@ -308,8 +308,7 @@ for (i in unique(df.mic$unique.id)){ # for every ID (unique to block, temp, plat
   s <- max(2, which.max(ln.slopes))  # We need at least 3 data points
   
   df.i.th <- df.i[df.i$days <= t.series[s], ] # Get the thresholded data according to our sliding window approach
-  # The + 1 here just corrects for the labelling mismatch (e.g. in the above line, s will return 1 when the 2nd slope is the highest)
-  
+
   if (length(unique(na.omit(df.i.th$OD600))) == 1) { # If all the numbers in df.i.th are the same. set µ to 0...
     µ.est <- 0
     

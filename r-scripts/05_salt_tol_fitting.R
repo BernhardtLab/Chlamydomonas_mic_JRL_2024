@@ -15,6 +15,7 @@ library(Deriv)
 library(car)
 library(boot)
 library(minpack.lm)
+library(bayestestR)
 
 salt_fun <- function(S, a, b, c) {
   a / (1 + exp(b * (S - c)))
@@ -105,7 +106,7 @@ for (i in unique(df.c.s$rep.id[df.c.s$rep.id >= 1])) { # for each replicate ID. 
                              start_lower =  c(a = 0.5, b = 0,  c = 0),
                              start_upper = c(a = 2,   b = 10, c = 10),
                              lower = c(a = 0.5, b = 0,  c = 0),
-                             upper = c(a = 2,   b = 10, c = 12),
+                             upper = c(a = 5,   b = 10, c = 12),
                              supp_errors = 'Y',
                              convergence_count = FALSE
   )
@@ -125,8 +126,8 @@ for (i in unique(df.c.s$rep.id[df.c.s$rep.id >= 1])) { # for each replicate ID. 
   salt.LM <- nlsLM(µ ~ salt_fun(S = salt, a = a, b = b, c = c),
                     data = df.i,
                     start = c(a = a.mod, b = b.mod, c = c.mod),
-                    lower = c(a = max(0, a.mod - 0.5), b = max(0, b.mod - 2), c = max (0, c.mod - 2)),
-                    upper = c(a = a.mod + 0.5, b = b.mod + 2, c = c.mod +2),
+                    lower = c(a = max(0, a.mod - 1), b = max(0, b.mod - 2), c = max (0, c.mod - 2)),
+                    upper = c(a = a.mod + 1, b = b.mod + 2, c = c.mod +2),
                     control = nls.lm.control(maxiter=500)
   )
   
@@ -186,5 +187,5 @@ for (i in unique(df.c.s$rep.id[df.c.s$rep.id >= 1])) { # for each replicate ID. 
   
 }
 
-write.csv(c.summ.df, "processed-data/07a_chlamy_salt_tol.csv") # 204 Monod curves!
+write.csv(c.summ.df, "processed-data/07a_chlamy_salt_tol.csv") # 204 salt tolerance curves!
 write.csv(fit.df, "processed-data/07b_chlamy_salt_tol_fits.csv")

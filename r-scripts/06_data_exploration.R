@@ -1528,3 +1528,31 @@ p.pca2 <- ggplot(df.pca.plot, aes(x = PC1, y = PC2)) +
   theme_classic()
 
 p.pca2
+
+df.cent <- df.pca.plot %>%
+  group_by(mic) %>%
+  summarise(
+    PC1 = mean(PC1),
+    PC2 = mean(PC2),
+    .groups = "drop"
+  )
+
+ggplot(df.pca.plot, aes(PC1, PC2)) +
+  
+  geom_point(colour = "grey70", alpha = 0.5) +
+  
+  geom_text(data = df.cent,
+            aes(label = mic),
+            size = 3.5,
+            fontface = "bold") +
+  
+  theme_classic()
+
+p.pca3 <- p.pca +
+  
+  geom_point(colour = "grey70", alpha = 0.5) +
+  
+  geom_text(data = df.cent,
+            aes(label = mic),
+            size = 3.5,
+            fontface = "bold")

@@ -6,7 +6,6 @@
 # Packages & functions ----------------------------------------------------
 
 library(tidyverse)
-
 library(R2jags)
 library(mcmcplots)
 library(bayestestR)
@@ -185,3 +184,73 @@ for (i in unique(df.c.n$rep.id[df.c.n$rep.id >= 26])) { # for each replicate ID.
 
 write.csv(c.summ.df, "processed-data/11a_chlamy_Monod_nit_bayes.csv") 
 write.csv(fit.df, "processed-data/11b_chlamy_Monod_nit_fits_bayes.csv")
+
+# Load and compile if needed ----------------------------------------------
+
+n <-0 # progression tracker
+
+for (i in unique(df.c.n$rep.id[df.c.n$rep.id >= 1])) { # for each replicate ID. Can adjust starting point if running in chunks
+  
+  n <- n + 1
+  
+  df.i <- df.c.n %>% 
+    filter(rep.id == i)
+  df.i <- droplevels(df.i)
+  
+  load(paste0("R2jags-models/rep_", i, "_nit_monod.RData")) # load the lactin2 model
+  
+  post <- as.data.frame(monod.jag$BUGSoutput$sims.matrix) # The posteriors
+  
+  post <- post %>% 
+    select(K_s, r_max)
+  
+  post$aff <- 1/post$K_s
+  
+  c.summ.df <- rbind(c.summ.df, data.frame(                                     # Add summary data
+    block = df.i$block[1],                                                      # Block
+    mic = df.i$mic[1],                                                          # Microbial inocula
+    rep = df.i$rep[1],                                                          # Replicate
+    id = df.i$rep.id[1],                                                        # Replicate id
+    
+    K.s.mod = monod.jag$BUGSoutput$summary[1,1],                                # Half saturation constant (model output)
+    K.s.post = median(post$K_s, na.rm = T),                                     # Half saturation constant (posterior median)
+    K.s.min = hdi(post$K_s, ci = 0.95)$CI_low,                                  # Half saturation constant (lower HDPI)
+    K.s.max = hdi(post$K_s, ci = 0.95)$CI_high,                                 # Half saturation constant (upper HDPI)
+    K.s.na = mean(is.na(post$K_s)),                                             # % NA returns
+    
+    r.max.mod = monod.jag$BUGSoutput$summary[3,1],                              # Maximum growth rate (model output)
+    r.max.post = median(post$r_max, na.rm = T),                                 # Maximum growth rate (posterior median)
+    r.max.min = hdi(post$r_max, ci = 0.95)$CI_low,                              # Maximum growth rate (lower HDPI)
+    r.max.max = hdi(post$r_max, ci = 0.95)$CI_high,                             # Maximum growth rate (upper HDPI)
+    r.max.na = mean(is.na(post$r_max)),                                         # % NA returns
+    
+    aff.mod = 1/monod.jag$BUGSoutput$summary[1,1],                              # affinity (1/Ks) (model output)
+    aff.post = median(post$aff, na.rm = T),                                     # affinity (1/Ks) (posterior median)
+    aff.min = hdi(post$aff, ci = 0.95)$CI_low,                                  # affinity (1/Ks) (lower HDPI)
+    aff.max = hdi(post$aff, ci = 0.95)$CI_high,                                 # affinity (1/Ks) (upper HDPI)
+    aff.na = mean(is.na(post$aff))                                              # % NA returns
+    
+  ))
+  
+  nit_sum <- monod.jag$BUGSoutput$summary[c(1:3),] # Have to create a new frame for summaries (not listed 1 to 6)
+  
+  for (j in 1:3){
+    fit.df <- rbind(fit.df, data.frame(                                         # Model performance data
+      block = df.i$block[1],                                                    # Block
+      mic = df.i$mic[1],                                                        # Microbial inocula
+      rep = df.i$rep[1],                                                        # Replicate
+      id = df.i$rep.id[1],                                                      # Replicate id
+      
+      Parameter = rownames(nit_sum)[j],          # Model parameter (e.g. K_s, r_max, etc.)
+      mean = nit_sum[j,1],                       # Posterior mean
+      Rhat = nit_sum[j,8],                       # Rhat values
+      n.eff = nit_sum[j,9]                       # Sample size estimates (should be ~6000)
+    ))
+  }
+  
+  print(paste("Done", n, "of ", length(unique(df.c.n$rep.id))))
+  
+}
+
+write.csv(c.summ.df, "processed-data/100a_chlamy_Monod_nit_bayes.csv") 
+write.csv(fit.df, "processed-data/100b_chlamy_Monod_nit_fits_bayes.csv")

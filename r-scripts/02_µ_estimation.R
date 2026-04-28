@@ -159,16 +159,22 @@ df.chlamy <- df %>%
 # We'll need to record each of these for each replicate, as well the exponential growth rate. We also want block, and microbe, plate, and well
 
 df.µ <- data.frame(                    # Summary dataframe for µ estimates
+  
   unique.id = character(),             # Unique ID
+  
   temp = numeric(),                    # Temperature
   nit = numeric(),                     # Nitrogen
   salt = numeric(),                    # Salt
+  
   block = numeric(),                   # Block
   mic = character(),                   # Microbe
   plate = numeric(),                   # Plate at Temp
   well = numeric(),                    # Well at Temp
-  rep = numeric(),                    # Replicate
-  µ = numeric()                        # Thresholded µ
+  rep = numeric(),                     # Replicate
+  
+  µ = numeric(),                       # Thresholded µ
+  k = numeric(),                       # Maximum density (ish, proxy for carrying capacity?)
+  time = numeric()                     # How many days are needed to estimate the exponential growth phase?
 )
 
 # Each unique well ID has its own singular combination of treatments.
@@ -234,15 +240,21 @@ for (i in unique(df.chlamy$unique.id)){ # for every ID (unique to block, temp, p
   
   df.µ <- rbind(df.µ, data.frame(
     unique.id = df.i$unique.id[1],
+    
     temp = df.i$Temperature.C[1],
     nit = df.i$Nitrogen.conc.µM[1],
     salt = df.i$Salt.conc.g.l[1],
+    
     block = df.i$Block[1],
     mic = df.i$Microbe[1],
+    
     plate = df.i$Plate.at.T[1],
     well = df.i$Well.at.T[1],
     rep = df.i$Replicate[1],
-    µ = µ.est
+    
+    µ = µ.est,
+    k = df.i %>% filter(days > 1) %>% summarize(k = max(OD600, na.rm = T)) %>% pull(k),
+    time = max(df.i.th$days)                  
   ))
   
 } # 5306 estimates of µ
@@ -263,15 +275,21 @@ df.mic <- df %>%
 
 df.µ <- data.frame(                    # Summary dataframe for µ estimates
   unique.id = character(),             # Unique ID
+  
   temp = numeric(),                    # Temperature
   nit = numeric(),                     # Nitrogen
   salt = numeric(),                    # Salt
+  
   block = numeric(),                   # Block
   mic = character(),                   # Microbe
+  
   plate = numeric(),                   # Plate at Temp
   well = numeric(),                    # Well at Temp
   rep = numeric(),                     # Replicate
-  µ = numeric()                        # Thresholded µ
+  
+  µ = numeric(),                       # Thresholded µ
+  k = numeric(),                       # Maximum density (ish, proxy for carrying capacity?)
+  time = numeric()                     # How many days are needed to estimate the exponential growth phase?
 )
 
 # Each unique well ID has its own singular combination of treatments.

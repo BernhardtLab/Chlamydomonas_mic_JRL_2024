@@ -76,6 +76,10 @@ c.summ.df <- data.frame(    # We'll create a dataframe to store the data as we f
   T.max.max = numeric(),    # Maximum T (upper HDPI)
   T.max.na = numeric(),     # %% NA returns
   
+  T.br = numeric(),         # Thermal breadth (calculus)
+  T.br.lwr = numeric(),     # Thermal breadth (lower HDPI)
+  T.br.upr = numeric(),     # Thermal breadth (upper HDPI)
+  
   T.opt = numeric(),        # Optimal T (calculus)
   T.opt.min = numeric(),    # Optimal T (lower HDPI)
   T.opt.max = numeric(),    # Optimal T (upper HDPI)
@@ -134,9 +138,9 @@ N.Temp.xs <-length(Temp.xs)
 
 inits.lactin <- function() { # The other static initial values. 
   list(
-    a = runif(1, 0.05, 0.15),  # More constrained initial values
+    a = runif(1, 0.04, 0.07),  # More constrained initial values
     tmax = runif(1, 37, 43),
-    d.t = runif(1, 1, 5),
+    d.t = runif(1, 8, 11),
     b = runif(1, -2.5, -1),
     sigma = runif(1, 0.1, 2)
   )
@@ -146,7 +150,7 @@ rep.ids <- unique(df.c.t$rep.id) # Save the unique rep ids so we can run the foo
 
 n <- 0 # for tracking progress
 
-for (i in unique(df.c.t$rep.id[df.c.t$rep.id >= 6])) { # for each replicate ID. Can adjust starting point if running in chunks
+for (i in unique(df.c.t$rep.id[df.c.t$rep.id >= 1])) { # for each replicate ID. Can adjust starting point if running in chunks
   
   n <- n + 1
   
@@ -395,5 +399,269 @@ for (i in unique(df.c.t$rep.id[df.c.t$rep.id >= 6])) { # for each replicate ID. 
   
 }
 
-write.csv(c.summ.df, "processed-data/10a_chlamy_TPCs_bayes.csv") # 204 TPCs!
-write.csv(fit.df, "processed-data/10b_chlamy_TPC_bayes_fits.csv")
+write.csv(c.summ.df, "processed-data/10c_chlamy_TPCs_bayes.csv") # using adjusted priors here
+write.csv(fit.df, "processed-data/10d_chlamy_TPC_bayes_fits.csv")
+
+###### Load and compile if needed ######
+
+n <- 0 # for tracking progress
+
+for (i in unique(df.c.t$rep.id[df.c.t$rep.id >= 1])) { # for each replicate ID. Can adjust starting point if running in chunks
+  
+  n <- n + 1
+  
+  df.i <- df.c.t %>% 
+    filter(rep.id == i)
+  
+  df.i <- droplevels(df.i)
+  
+  load(paste0("R2jags-models/rep_", i, "_lactin2.RData")) # load the lactin2 model
+  
+  post <- as.data.frame(lac.jag$BUGSoutput$sims.matrix) # The posterior distributions
+  
+  post <- post %>% 
+    select(a, b, d.t, tmax)
+  
+  post.a <- median(post$a, na.rm = T)    # Extract parameters
+  post.b <- median(post$b, na.rm = T)
+  post.tmax <- median(post$tmax, na.rm = T)
+  post.d.t <- median(post$d.t, na.rm = T)
+  
+  # Calculate summary metrics for the curve across all posteriors
+  
+  # Topt
+  calc_Topt <- function(a, b, tmax, d.t) {
+    tryCatch(
+      uniroot(
+        function(temp) lactin2_deriv(temp, a, b, tmax, d.t),
+        interval = c(-10, 45)
+      )$root,
+      error = function(e) NA
+    )
+  }
+  
+  T.opt <- mapply(
+    calc_Topt,
+    a = post$a,
+    b = post$b,
+    tmax = post$tmax,
+    d.t = post$d.t
+  )
+  
+  #rmax
+  r.max <- mapply(
+    lactin2,
+    temp = T.opt,
+    a = post$a,
+    b = post$b,
+    tmax = post$tmax,
+    d.t = post$d.t
+  )
+  
+  #Tmin
+  Tmin.safe <- function(Topt, a, b, tmax, d.t, # Tmin equation
+                        lower = -50) {
+    
+    f_low  <- lactin2(temp = lower, a = a, b = b, tmax = tmax, d.t = d.t)
+    f_high <- lactin2(temp = Topt,  a = a, b = b, tmax = tmax, d.t = d.t)
+    
+    # Check for valid root conditions
+    if (!is.finite(f_low) || !is.finite(f_high)) return(NA_real_)
+    if (f_low * f_high > 0) return(NA_real_)   # no sign change
+    
+    # Root exists → compute it
+    uniroot(
+      function(temp) lactin2(temp, a, b, tmax, d.t),
+      interval = c(lower, Topt)
+    )$root
+  }
+  
+  T.min <- mapply(
+    Tmin.safe,
+    Topt = T.opt,
+    a    = post$a,
+    b    = post$b,
+    tmax = post$tmax,
+    d.t  = post$d.t
+  )
+  
+  #Tmax
+  Tmax.safe <- function(Topt, a, b, tmax, d.t, # Tmax equation
+                        upper = 50) {
+    
+    f_low  <- lactin2(temp = Topt, a = a, b = b, tmax = tmax, d.t = d.t)
+    f_high <- lactin2(temp = upper,  a = a, b = b, tmax = tmax, d.t = d.t)
+    
+    # Check for valid root conditions
+    if (!is.finite(f_low) || !is.finite(f_high)) return(NA_real_)
+    if (f_low * f_high > 0) return(NA_real_)   # no sign change
+    
+    # Root exists → compute it
+    uniroot(
+      function(temp) lactin2(temp, a, b, tmax, d.t),
+      interval = c(Topt, upper)
+    )$root
+  }
+  
+  T.max <- mapply(
+    Tmax.safe,
+    Topt = T.opt,
+    a    = post$a,
+    b    = post$b,
+    tmax = post$tmax,
+    d.t  = post$d.t
+  )
+  
+  # Tbr
+  r.half <- r.max/2
+  
+  Tmin.half.safe <- function(Topt, a, b, tmax, d.t, r_half, # Tmin equation
+                             lower = -10) {
+    
+    f_low  <- lactin2_halfmax(temp = lower, a = a, b = b, tmax = tmax, d.t = d.t, r_half)
+    f_high <- lactin2_halfmax(temp = Topt,  a = a, b = b, tmax = tmax, d.t = d.t, r_half)
+    
+    # Check for valid root conditions
+    if (!is.finite(f_low) || !is.finite(f_high)) return(NA_real_)
+    if (f_low * f_high > 0) return(NA_real_)   # no sign change
+    
+    # Root exists → compute it
+    uniroot(
+      function(temp) lactin2_halfmax(temp, a, b, tmax, d.t, r_half),
+      interval = c(lower, Topt)
+    )$root
+  }
+  
+  T.min.half <- mapply(
+    Tmin.half.safe,
+    Topt = T.opt,
+    a    = post$a,
+    b    = post$b,
+    tmax = post$tmax,
+    d.t  = post$d.t,
+    r_half = r.half
+  )
+  
+  Tmax.half.safe <- function(Topt, a, b, tmax, d.t, r_half, # Tmax equation
+                             upper = 50) {
+    
+    f_low  <- lactin2_halfmax(temp = Topt, a = a, b = b, tmax = tmax, d.t = d.t, r_half)
+    f_high <- lactin2_halfmax(temp = upper,  a = a, b = b, tmax = tmax, d.t = d.t, r_half)
+    
+    # Check for valid root conditions
+    if (!is.finite(f_low) || !is.finite(f_high)) return(NA_real_)
+    if (f_low * f_high > 0) return(NA_real_)   # no sign change
+    
+    # Root exists → compute it
+    uniroot(
+      function(temp) lactin2_halfmax(temp, a, b, tmax, d.t, r_half),
+      interval = c(Topt, upper)
+    )$root
+  }
+  
+  T.max.half <- mapply(
+    Tmax.half.safe,
+    Topt = T.opt,
+    a    = post$a,
+    b    = post$b,
+    tmax = post$tmax,
+    d.t  = post$d.t,
+    r_half = r.half
+  )
+  
+  T.br <- T.max.half - T.min.half
+  
+  c.summ.df <- rbind(c.summ.df, data.frame(                                     # Add summary data
+    block = df.i$block[1],                                                      # Block
+    mic = df.i$mic[1],                                                          # Microbial inocula
+    rep = df.i$rep[1],                                                          # Replicate
+    id = df.i$rep.id[1],                                                        # Replicate id
+    
+    T.min = median(T.min, na.rm = T),                                           # Minimum T (calculus)
+    T.min.min = hdi(T.min[!is.na(T.min)], credMass = 0.95)$CI_low,              # Minimum T (lower HDPI)
+    T.min.max = hdi(T.min[!is.na(T.min)], credMass = 0.95)$CI_high,             # Minimum T (upper HDPI)
+    T.min.na = mean(is.na(T.min)),                                              # % NA returns
+    
+    T.max = median(T.max, na.rm = T),                                           # Maximum T (calculus)
+    T.max.min = hdi(T.max[!is.na(T.max)], credMass = 0.95)$CI_low,              # Maximum T (lower HDPI)
+    T.max.max = hdi(T.max[!is.na(T.max)], credMass = 0.95)$CI_high,             # Maximum T (upper HDPI)
+    T.max.na = mean(is.na(T.max)),                                              # % NA returns
+    
+    T.opt = median(T.opt, na.rm = T),                                           # Optimal T (calculus)
+    T.opt.min = hdi(T.opt[!is.na(T.opt)], credMass = 0.95)$CI_low,              # Optimal T (lower HDPI)
+    T.opt.max = hdi(T.opt[!is.na(T.opt)], credMass = 0.95)$CI_high,             # Optimal T (upper HDPI)
+    
+    T.br = median(T.br, na.rm = T),                                             # Thermal breadth (calculus)
+    T.br.lwr = hdi(T.br[!is.na(T.br)], credMass = 0.95)$CI_low,                 # Thermal breadth (lower HDPI)
+    T.br.upr = hdi(T.br[!is.na(T.br)], credMass = 0.95)$CI_high,                # Thermal breadth (upper HDPI)
+    
+    r.max = median(r.max, na.rm = T),                                           # Maximum growth rate  (calculus)
+    r.max.min = hdi(r.max[!is.na(r.max)], credMass = 0.95)$CI_low,              # Maximum growth rate  (lower HDPI)
+    r.max.max = hdi(r.max[!is.na(r.max)], credMass = 0.95)$CI_high,             # Maximum growth rate  (upper HDPI)
+    
+    T.br.min = median(T.min.half, na.rm = T),                                   # T breadth (calculus)
+    T.br.min.min = hdi(T.min.half[!is.na(T.min.half)], credMass = 0.95)$CI_low, # T breadth (lower HDPI)
+    T.br.min.max = hdi(T.min.half[!is.na(T.min.half)], credMass = 0.95)$CI_high,# T breadth (upper HDPI)
+    T.br.min.na = mean(is.na(T.min.half)),                                      # % NA returns
+    
+    T.br.max = median(T.max.half, na.rm = T),                                   # T breadth (calculus)
+    T.br.max.min = hdi(T.max.half[!is.na(T.max.half)], credMass = 0.95)$CI_low, # T breadth (lower HDPI)
+    T.br.max.max = hdi(T.max.half[!is.na(T.max.half)], credMass = 0.95)$CI_high,# T breadth (upper HDPI)
+    T.br.max.na = mean(is.na(T.max.half)),                                      # % NA returns
+    
+    a = post.a,                                                                 # parameter: a
+    b = post.b,                                                                 # parameter: b
+    tmax = post.tmax,                                                           # parameter: tmax
+    d.t = post.d.t,                                                             # parameter: deltaT
+    
+    a.mod = lac.jag$BUGSoutput$summary[1,1],                                    # Jags parameter: a
+    b.mod = lac.jag$BUGSoutput$summary[2,1],                                    # Jags parameter: b
+    tmax.mod = lac.jag$BUGSoutput$summary[1007,1],                               # Jags parameter: tmax
+    d.t.mod =  lac.jag$BUGSoutput$summary[3,1]                                  # Jags parameter: deltaT
+  ))
+  
+  lac.sum <- as.data.frame(lac.jag$BUGSoutput$summary[c(1:3,1007),])
+  
+  for (j in 1:4){
+    fit.df <- rbind(fit.df, data.frame(                                         # Model performance data
+      block = df.i$block[1],                                                    # Block
+      mic = df.i$mic[1],                                                        # Microbial inocula
+      rep = df.i$rep[1],                                                        # Replicate
+      id = df.i$rep.id[1],                                                      # Replicate id
+      
+      Parameter = rownames(lac.sum)[j],                                         # Model parameter (e.g. cf.a, cf.tmax, etc.)
+      mean = lac.sum[j,1],                                                      # Posterior mean
+      Rhat = lac.sum[j,8],                                                      # Rhat values
+      n.eff = lac.sum[j,9],                                                     # Sample size estimates (should be ~6000)
+      stringsAsFactors = FALSE                   
+    ))
+  }
+  
+  print(paste("Done", n, "of ", length(unique(df.c.t$rep.id))))
+  
+}
+
+write.csv(c.summ.df, "processed-data/101a_chlamy_TPCs_bayes.csv") # 204 TPCs!
+write.csv(fit.df, "processed-data/101b_chlamy_TPC_bayes_fits.csv")
+
+###### Plotting & troubleshooting ######
+
+curve.t <- tibble::tibble(
+  temp  = seq(-5, 45, length.out = 250),
+  rate = lactin2(temp, a = post.a, b = post.b, d.t = post.d.t, tmax = post.tmax)
+)
+
+ggplot(curve.t, aes(x = temp, y = rate)) +
+  geom_line(size = 1.5, colour = "firebrick3") +
+  geom_point(data = df.i,
+             aes(x = temp, y = µ),
+             inherit.aes = FALSE, size = 2) +
+  labs(
+    x = "Temperature (°C)",
+    y = "Exponential growth rate",
+    title = "Lactin II TPC fits (blocked, Bayesian)"
+  ) +
+  theme_classic() +
+  ylim(-0.5, 3) +
+  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.2) 
+

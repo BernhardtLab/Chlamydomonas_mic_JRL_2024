@@ -1,4 +1,4 @@
-﻿Temperature.C,Nitrogen.conc.µM,Salt.conc.g.l,Chlamy.y.n,Microbe,Plate.at.T,Well.at.T,Notes,Replicate
+﻿Temperature.C,Nitrogen.conc.uM,Salt.conc.g.l,Chlamy.y.n,Microbe,Plate.at.T,Well.at.T,Notes,Replicate
 8,1000,0,y,2,1,1,"GENERAL - noted possible contamination of N7, N8 - compare results to other blocks",2
 8,1000,0,y,1,1,2,,3
 8,1000,0,n,11,1,3,,2

@@ -1,4 +1,4 @@
-﻿Temperature.C,Nitrogen.conc.µM,Salt.conc.g.l,Chlamy.y.n,Microbe,Plate.at.T,Well.at.T,Notes,Replicate
+﻿Temperature.C,Nitrogen.conc.uM,Salt.conc.g.l,Chlamy.y.n,Microbe,Plate.at.T,Well.at.T,Notes,Replicate
 8,1000,0,y,12,1,1,,3
 8,1000,0,BLANK,BLANK,1,2,,BLANK
 8,1000,0,n,4,1,3,,2

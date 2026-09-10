@@ -1,4 +1,4 @@
-﻿Temperature.C,Nitrogen.conc.µM,Salt.conc.g.l,Chlamy.y.n,Microbe,Plate.at.T,Well.at.T,Notes,Replicate
+﻿Temperature.C,Nitrogen.conc.uM,Salt.conc.g.l,Chlamy.y.n,Microbe,Plate.at.T,Well.at.T,Notes,Replicate
 8,1000,0,n,15,1,1,GENERAL ISSUE - didn't put carbon in the media. Use for comparison with other blocks (~effects of carbon),2
 8,1000,0,n,13,1,2,,3
 8,1000,0,n,3,1,3,,1

@@ -744,5 +744,42 @@ df.µ %>% filter(is.na(µ)) # How did this work? Are there any NA values that sh
 
 write.csv(df.µ, "processed-data/14_mics_with_chlamy_µs.csv") #4976 measurements
 
+# Examine the microbial alone data ----------------------------------------
 
+df.µ.mc <- read.csv("processed-data/14_mics_with_chlamy_µs.csv")
+
+ggplot(df.µ.mc %>% filter(salt == 0, nit == 1000), aes(x = temp, y = µ)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ mic, ncol = 6) +
+  theme_classic()
+
+ggplot(df.µ.mc %>% filter(temp == 30, nit == 1000), aes(x = salt, y = µ)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ mic, ncol = 6) +
+  theme_classic()
+
+ggplot(df.µ.mc %>% filter(temp == 30, salt == 0), aes(x = nit, y = µ)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ mic, ncol = 6) +
+  theme_classic()
+
+# Look at variation in ~ k
+
+ggplot(df.µ.mc %>% filter(salt == 0, nit == 1000), aes(x = temp, y = k)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ mic, ncol = 6) +
+  geom_smooth(method = 'lm') +
+  theme_classic()
+
+ggplot(df.µ.mc %>% filter(temp == 30, nit == 1000), aes(x = salt, y = k)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ mic, ncol = 6) +
+  geom_smooth(method = 'lm') +
+  theme_classic()
+
+ggplot(df.µ.mc %>% filter(temp == 30, salt == 0), aes(x = nit, y = k)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ mic, ncol = 6) +
+  geom_smooth(method = 'lm') +
+  theme_classic()
 

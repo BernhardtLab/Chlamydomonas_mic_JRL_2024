@@ -12,28 +12,18 @@
 #
 # ---- Method ----------------------------------------------------------------
 # For each well: sort by time; if the 2nd read is below the 1st (settling /
-# condensation), drop the 1st and treat the 2nd as N0. An EXPANDING window
+# condensation), drop the 1st and treat the 2nd as N0. An expanding window
 # anchored at the start grows one read at a time; the endpoint of the
 # exponential phase is the window with the steepest cumulative slope of
 # log(RFU) vs time (max-slope is self-protecting against lag). mu is then the
 # rate r from a 1-parameter nonlinear fit RFU ~ N0 * exp(r * days) over that
 # window, with N0 fixed at the first (post-trim) read.
 #
-# ---- Refactor note (2026) --------------------------------------------------
-# Faithful refactor of the original 02_mu_estimation.R:
-#   * per-well estimator pulled into one function; loop -> split + bind_rows
-#   * scattered pipetting-error corrections consolidated into one block
-#   * reads the rebuilt 01 output (Data-processed/); ASCII naming (mu, uM)
-#   * FIX: the yield column was `k = max(OD600)`, but OD600 is unusable
-#     (baseline "Known data issues"). Replaced with `peak.RFU = max(RFU)`.
-#   * The microbe-alone OD600 mu and the OD~RFU calibration sections are
-#     removed here (they rest on the unusable OD600; deferred per baseline).
-#
 # ---- Known limitation (disclosed, not corrected) --------------------------
 # With daily reads, ~39% of wells reach their peak in <=3 reads, so mu for the
 # fastest growers rests on few points. The per-well `n.points` column records
 # how many reads entered each fit so this can be filtered/reported downstream.
-# mu can be <= 0 for wells that never grew (stress extremes) — expected.
+# mu can be <= 0 for wells that never grew (stress extremes) — as expected.
 # =============================================================================
 
 library(tidyverse)
@@ -50,7 +40,8 @@ df <- df %>% filter(Chlamy.y.n != "BLANK")   # blanks are not analysed here
 
 # ---- Known data corrections (pipetting errors caught in lab notes) ---------
 # Wells that received the wrong microbe are relabelled; wells that got an
-# unknown inoculum (or Chlamy by accident) are dropped. See lab notebook.
+# unknown inoculum (or Chlamy by accident) are dropped. See lab notebook and 
+# 'notes' column in the design maps for each block
 drop.wells <- c("b1.t25.p1.w19", "b1.t33.p1.w2", "b1.t33.p1.w12",
                 "b1.t39.p2.w105",                       # block 1
                 "b4.t30.p19.w1085", "b4.t30.p20.w1152") # block 4
@@ -80,15 +71,15 @@ df <- df %>%
 # ---- Per-well mu estimator -------------------------------------------------
 # di: all reads for one well, columns include RFU, days, log.RFU.
 estimate_mu_well <- function(di) {
-
+  
   di <- di[order(di$days), ]
   if (nrow(di) < 2) return(list(mu = NA_real_, peak.RFU = max(di$RFU, na.rm = TRUE),
                                 time = NA_real_, n.points = nrow(di)))
-
+  
   # Trim a settling first read: if read 2 < read 1, treat read 2 as N0.
   if (!is.na(di$RFU[2]) && di$RFU[2] < di$RFU[1]) di <- di[-1, ]
   di$N0 <- di$RFU[1]
-
+  
   # Expanding-window cumulative slopes of log(RFU) ~ days; pick the steepest.
   tser <- unique(di$days)[-1]                      # endpoints (>= 2-point windows)
   slopes <- vapply(tser, function(z) {
@@ -96,7 +87,7 @@ estimate_mu_well <- function(di) {
   }, numeric(1))
   s <- max(2L, which.max(slopes))                  # >= 3 points in the fit window
   di.th <- di[di$days <= tser[s], ]
-
+  
   # 1-parameter nonlinear fit for the exponential rate r (N0 fixed as data).
   if (length(unique(na.omit(di.th$RFU))) == 1) {
     mu <- 0                                         # flat well -> no growth
@@ -109,7 +100,7 @@ estimate_mu_well <- function(di) {
       error = function(e) NULL)
     mu <- if (is.null(fit)) NA_real_ else coef(fit)[["r"]]
   }
-
+  
   list(mu       = mu,
        peak.RFU = max(di$RFU, na.rm = TRUE),        # yield trait (was k = max OD600)
        time     = max(di.th$days),                  # window endpoint (days)
@@ -143,17 +134,5 @@ df.mu <- bind_rows(lapply(wells, function(di) {
     stringsAsFactors = FALSE)
 }))
 
-# ---- Sanity checks ---------------------------------------------------------
-cat("\n--- 02_mu_estimation summary ---\n")
-cat("Wells (mu estimates):", nrow(df.mu), "\n")
-cat("NA mu               :", sum(is.na(df.mu$mu)), "\n")
-cat("mu <= 0 (no growth) :", sum(df.mu$mu <= 0, na.rm = TRUE),
-    sprintf("(%.1f%%)\n", 100 * mean(df.mu$mu <= 0, na.rm = TRUE)))
-cat("Fits with <=3 points:", sum(df.mu$n.points <= 3),
-    sprintf("(%.1f%% - the disclosed few-points limit)\n",
-            100 * mean(df.mu$n.points <= 3)))
-cat("Blocks present      :", paste(sort(unique(df.mu$block)), collapse = ", "), "\n")
-
 # ---- Write -----------------------------------------------------------------
 write.csv(df.mu, file.path(proc.dir, out.file), row.names = FALSE)
-cat("\nWritten to:", file.path(proc.dir, out.file), "\n")

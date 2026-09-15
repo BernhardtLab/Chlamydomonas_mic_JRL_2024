@@ -1,16 +1,20 @@
-# =============================================================================
+# Description -------------------------------------------------------------
+#
 # 02_mu_estimation.R
 # Chlamydomonas x microbe stress-resilience experiment
 # Jason R Laurich
+# September 11, 2026
 #
 # Estimate the per-well maximum exponential growth rate (mu) of the alga from
 # its RFU trajectories, for every Chlamy-containing well. mu is the rate trait
 # that feeds the downstream niche-trait curves (TPC / Monod / salt tolerance).
 #
-# ---- What this script produces --------------------------------------------
+# What this script produces:
+#
 #   Data-processed/02_chlamy_mus.csv   (one row per Chlamy well)
 #
-# ---- Method ----------------------------------------------------------------
+# Method:
+#
 # For each well: sort by time; if the 2nd read is below the 1st (settling /
 # condensation), drop the 1st and treat the 2nd as N0. An expanding window
 # anchored at the start grows one read at a time; the endpoint of the
@@ -19,26 +23,24 @@
 # rate r from a 1-parameter nonlinear fit RFU ~ N0 * exp(r * days) over that
 # window, with N0 fixed at the first (post-trim) read.
 #
-# ---- Known limitation (disclosed, not corrected) --------------------------
-# With daily reads, ~39% of wells reach their peak in <=3 reads, so mu for the
-# fastest growers rests on few points. The per-well `n.points` column records
-# how many reads entered each fit so this can be filtered/reported downstream.
-# mu can be <= 0 for wells that never grew (stress extremes) — as expected.
-# =============================================================================
+# Load packages -----------------------------------------------------------
 
 library(tidyverse)
 library(nls.multstart)
 
-# ---- Configuration ---------------------------------------------------------
+# Set paths ---------------------------------------------------------------
 proc.dir <- "Data-processed"
 in.file  <- "01_timeseries_data.csv"    # output of 01_data_upload.R
 out.file <- "02_chlamy_mus.csv"
 
-# ---- Load ------------------------------------------------------------------
+# Load the data -----------------------------------------------------------
+
 df <- read.csv(file.path(proc.dir, in.file))
 df <- df %>% filter(Chlamy.y.n != "BLANK")   # blanks are not analysed here
 
-# ---- Known data corrections (pipetting errors caught in lab notes) ---------
+
+# Correct the data (documented pipetting errors) --------------------------
+
 # Wells that received the wrong microbe are relabelled; wells that got an
 # unknown inoculum (or Chlamy by accident) are dropped. See lab notebook and 
 # 'notes' column in the design maps for each block
@@ -68,7 +70,8 @@ df <- df %>%
       unique.id == "b4.t30.p30.w1764" ~ 4,
       TRUE ~ Replicate))
 
-# ---- Per-well mu estimator -------------------------------------------------
+# Estimate mu for each well -----------------------------------------------
+
 # di: all reads for one well, columns include RFU, days, log.RFU.
 estimate_mu_well <- function(di) {
   
@@ -107,7 +110,8 @@ estimate_mu_well <- function(di) {
        n.points = nrow(di.th))                      # reads entering the fit
 }
 
-# ---- Run over every Chlamy well --------------------------------------------
+# Run over every well with Chlamydomonas ----------------------------------
+
 df.chlamy <- df %>%
   filter(Chlamy.y.n == "y") %>%
   mutate(log.RFU = log(RFU + 0.001))
@@ -134,5 +138,6 @@ df.mu <- bind_rows(lapply(wells, function(di) {
     stringsAsFactors = FALSE)
 }))
 
-# ---- Write -----------------------------------------------------------------
+# Write the file ----------------------------------------------------------
+
 write.csv(df.mu, file.path(proc.dir, out.file), row.names = FALSE)

@@ -1,0 +1,28 @@
+model {
+
+  # ---- Priors (widened vs the original so they don't clip the brms posteriors) ----
+  a    ~ dunif(0, 0.25)          # rise rate           (was 0, 0.08)
+  tmax ~ dunif(35, 52)           # upper-limit param   (was 36, 48)
+  d.t  ~ dunif(2, 20)            # decline steepness   (was 7, 12)
+  for (k in 1:N.block) {
+    b[k] ~ dunif(-4, 1)          # block-specific offset -- fixed block effect on b
+  }
+  sigma ~ dunif(0, 5)
+  tau <- pow(sigma, -2)
+
+  # ---- Likelihood: block enters only through the offset b ----
+  for (i in 1:N.obs) {
+    trait.mu[i] <- exp(a * temp[i]) -
+                   exp(a * tmax - (tmax - temp[i]) / d.t) +
+                   b[block[i]]
+    trait[i] ~ dnorm(trait.mu[i], tau)
+  }
+
+  # block-averaged offset -> block-marginal curve (matches how we averaged blocks in brms)
+  b.bar <- mean(b[1:N.block])
+  for (j in 1:N.Temp.xs) {
+    r.pred[j] <- exp(a * Temp.xs[j]) -
+                 exp(a * tmax - (tmax - Temp.xs[j]) / d.t) +
+                 b.bar
+  }
+}

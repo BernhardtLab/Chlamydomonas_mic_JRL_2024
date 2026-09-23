@@ -70,7 +70,6 @@ effects.file <- file.path(proc.dir, "07_nit_monod_microbe_effects.csv")
 
 options(mc.cores = parallel::detectCores())
 
-
 # Monod functions ---------------------------------------------------------
 
 monod <- function(nit, mumax, ks) mumax * nit / (ks + nit)   # for prediction/plotting
@@ -173,8 +172,6 @@ loo_fit <- loo(mon.fit); print(loo_fit)
 mean(loo_fit$diagnostics$pareto_k > 0.7)
 
 # posterior-predictive checks + microbe variance
-## CHECK the stat_grouped panels: if within-N spread is badly mis-captured,
-## model sigma on N (e.g. sigma ~ nit or sigma ~ poly(nit, 2)), as in the TPC.
 pp_check(mon.fit, ndraws = 100)
 pp_check(mon.fit, type = "stat_grouped", stat = "sd", group = "nit")
 print(VarCorr(mon.fit))
@@ -350,7 +347,7 @@ fig.fits <- ggplot() +
        title = "Monod fits over raw data: pooled vs individual") +
   theme_bw() + theme(legend.position = "top")
 
-ggsave(file.path(fig.dir, "05_fig_nit_fits.png"), fig.fits, width = 13, height = 9, dpi = 300)
+ggsave(file.path(fig.dir, "06_fig_nit_fits.png"), fig.fits, width = 13, height = 9, dpi = 300)
 
 # microbe - none effects: forest plot per trait, both methods
 fig.eff <- effects |>
@@ -365,4 +362,4 @@ fig.eff <- effects |>
        title = "Nitrogen-response effects of microbial treatment") +
   theme_bw()
 
-ggsave(file.path(fig.dir, "05_fig_nit_effects.png"), fig.eff, width = 10, height = 6, dpi = 300)
+ggsave(file.path(fig.dir, "07_fig_nit_effects.png"), fig.eff, width = 10, height = 6, dpi = 300)

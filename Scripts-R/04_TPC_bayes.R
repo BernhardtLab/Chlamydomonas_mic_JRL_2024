@@ -41,7 +41,7 @@
 #
 # Figures-misc: 
 #   04_fig_TPC_fits.png            fitted curves over the data for both models
-#   05_fig_trait_effects.png       microbe-vs-control effect posteriors
+#   05_fig_TPC_trait_effects.png       microbe-vs-control effect posteriors
 #
 # Load packages -----------------------------------------------------------
 
@@ -478,4 +478,4 @@ fig.eff <- effects |>
        title = "Thermal-trait effects of microbial treatment (vs. none)") +
   theme_bw() + theme(legend.position = "top")
 
-ggsave(file.path(fig.dir, "05_fig_trait_effects.png"), fig.eff, width = 12, height = 5, dpi = 300)
+ggsave(file.path(fig.dir, "05_fig_TPC_trait_effects.png"), fig.eff, width = 12, height = 5, dpi = 300)

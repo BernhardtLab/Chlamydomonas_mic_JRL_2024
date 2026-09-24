@@ -33,6 +33,7 @@
 # What this script produces:
 #
 #   Models/01_TPC_brms.rds                         the fitted, pooled brms model 
+#         /02_TPC_tr_ind.rds                       the full posterior for all microbes
 #   Models/individual/TPC_mic_1-15/none/all.rds    the individual fits
 #
 # Data-processed:   
@@ -305,6 +306,7 @@ bavg <- function(D, p) {
   bl <- grep(paste0("^b_", p, "_block"), colnames(D), value = TRUE)
   if (length(bl)) ic + rowSums(D[, bl, drop = FALSE]) / (length(bl) + 1) else ic
 }
+
 # pooled: block-averaged fixed part + microbe random deviation
 draws_pooled <- function(D, m) data.frame(
   a    = bavg(D, "a")    + D[, sprintf("r_mic__a[%s,Intercept]",    m)],
@@ -330,6 +332,8 @@ tr_ind <- setNames(lapply(mics.chr, function(m) {
   if (nrow(post) > NSUB) post <- post[sample(nrow(post), NSUB), ]
   traits_of(post)
 }), mics.chr)
+
+saveRDS(tr_ind, file.path(mod.dir, "02_TPC_tr_ind.rds"))
 
 # trait table: 04_TPC_traits_bayes.csv
 summ_traits <- function(tr) purrr::map_dfr(colnames(tr), function(v) {

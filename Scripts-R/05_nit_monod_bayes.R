@@ -28,7 +28,8 @@
 #
 # What this script produces:
 #
-#   Models/02_nit_monod_brms.rds                 the fitted, pooled brms model
+#   Models/03_nit_monod_brms.rds                 the fitted, pooled brms model
+#         /04_nit_monod_tr_ind.rds               the full posterior for all microbes
 #   Models/nit_individual/nit_monod_mic_*.rds    the individual fits
 #
 # Data-processed:
@@ -62,9 +63,9 @@ fig.dir  <- "Figures-misc"
 mod.dir  <- "Models"
 ind.dir  <- file.path(mod.dir, "individual")    # per-microbe fits go here
 
-# inputs / outputs (single source of truth)
+# inputs
 mu.file      <- "02_chlamy_mus.csv"                     # input: per-well mu (from 02)
-pooled.file  <- file.path(mod.dir, "02_nit_monod_brms")       # brms appends .rds itself
+pooled.file  <- file.path(mod.dir, "03_nit_monod_brms")       # brms appends .rds itself
 traits.file  <- file.path(proc.dir, "06_nit_monod_traits_bayes.csv")
 effects.file <- file.path(proc.dir, "07_nit_monod_microbe_effects.csv")
 
@@ -178,7 +179,7 @@ print(VarCorr(mon.fit))
 
 # Modelling: individual per-microbe Monod ---------------------------------
 
-pooled <- readRDS(file.path(mod.dir, "02_nit_monod_brms.rds"))   # if not already loaded as mon.fit
+pooled <- readRDS(file.path(mod.dir, "03_nit_monod_brms.rds"))   # if not already loaded as mon.fit
 bf <- fixef(pooled)
 round(bf[grepl("block", rownames(bf)), c("Estimate", "Q2.5", "Q97.5")], 3)
 
@@ -264,18 +265,23 @@ bavg <- function(D, p) {
 draws_pooled <- function(D, m) data.frame(
   mumax = bavg(D, "mumax") + D[, sprintf("r_mic__mumax[%s,Intercept]", m)],
   ks    = bavg(D, "ks")    + D[, sprintf("r_mic__ks[%s,Intercept]",    m)])
+
 draws_ind <- function(D) data.frame(mumax = bavg(D, "mumax"), ks = bavg(D, "ks"))
 
 # per-draw trait matrices (pooled: SAME draws across microbes -> paired contrasts)
 Dp    <- as.matrix(mon.fit)
 idx.c <- if (is.infinite(NSUB)) seq_len(nrow(Dp)) else sample(nrow(Dp), NSUB)
+
 tr_pooled <- setNames(lapply(mics.chr, function(m)
   traits_of(draws_pooled(Dp, m)[idx.c, ])), mics.chr)
+
 tr_ind <- setNames(lapply(mics.chr, function(m) {
   post <- draws_ind(as.matrix(fits.ind[[m]]))
   if (nrow(post) > NSUB) post <- post[sample(nrow(post), NSUB), ]
   traits_of(post)
 }), mics.chr)
+
+saveRDS(tr_ind, file.path(mod.dir, "04_nit_monod_tr_ind.rds"))
 
 # trait table -> 06_nit_monod_traits_bayes.csv
 summ_traits <- function(tr) purrr::map_dfr(colnames(tr), function(v) {

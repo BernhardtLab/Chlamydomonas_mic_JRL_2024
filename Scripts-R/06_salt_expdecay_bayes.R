@@ -42,7 +42,8 @@
 #                                             defined only when mmin < 0)
 # What this script produces:
 #
-#   Models/03_salt_brms.rds                    the fitted, pooled brms model
+#   Models/05_salt_brms.rds                    the fitted, pooled brms model
+#         /06_salt_tr_ind.rds                  the full posterior for all microbes
 #   Models/salt_individual/salt_mic_*.rds      the individual fits
 #
 # Data-processed:
@@ -75,9 +76,9 @@ fig.dir  <- "Figures-misc"
 mod.dir  <- "Models"
 ind.dir  <- file.path(mod.dir, "individual")   # per-microbe fits go here
 
-# inputs / outputs (single source of truth)
+# inputs
 mu.file      <- "02_chlamy_mus.csv"                    # input: per-well mu (from 02)
-pooled.file  <- file.path(mod.dir, "03_salt_brms")     # brms appends .rds itself
+pooled.file  <- file.path(mod.dir, "05_salt_brms")     # brms appends .rds itself
 traits.file  <- file.path(proc.dir, "08_salt_traits_bayes.csv")
 effects.file <- file.path(proc.dir, "09_salt_microbe_effects.csv")
 
@@ -200,7 +201,7 @@ print(VarCorr(salt.fit))
 
 # Modelling: individual per-microbe salt decay ----------------------------
 
-pooled <- readRDS(file.path(mod.dir, "03_salt_brms.rds"))   # if not already loaded as salt.fit
+pooled <- readRDS(file.path(mod.dir, "05_salt_brms.rds"))   # if not already loaded as salt.fit
 bf <- fixef(pooled)
 round(bf[grepl("block", rownames(bf)), c("Estimate", "Q2.5", "Q97.5")], 3)
 
@@ -299,11 +300,14 @@ Dp    <- as.matrix(salt.fit)
 idx.c <- if (is.infinite(NSUB)) seq_len(nrow(Dp)) else sample(nrow(Dp), NSUB)
 tr_pooled <- setNames(lapply(mics.chr, function(m)
   traits_of(draws_pooled(Dp, m)[idx.c, ])), mics.chr)
+
 tr_ind <- setNames(lapply(mics.chr, function(m) {
   post <- draws_ind(as.matrix(fits.ind[[m]]))
   if (nrow(post) > NSUB) post <- post[sample(nrow(post), NSUB), ]
   traits_of(post)
 }), mics.chr)
+
+saveRDS(tr_ind, file.path(mod.dir, "06_salt_tr_ind.rds"))
 
 # trait table -> 08_salt_traits_bayes.csv
 summ_traits <- function(tr) purrr::map_dfr(colnames(tr), function(v) {

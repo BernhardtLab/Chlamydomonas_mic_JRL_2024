@@ -111,8 +111,8 @@ pts <- bind_rows(
   mutate(type = factor(type, levels = c("Control (none)", "Single microbe",
                                         "Microbial community")))
 
-cols <- c("Control (none)" = "red", "Single microbe" = "black",
-          "Microbial community" = "blue")
+cols <- c("Control (none)" = "red2", "Single microbe" = "black",
+          "Microbial community" = "mediumblue")
 
 # Figure ------------------------------------------------------------------
 

@@ -537,4 +537,4 @@ fig3 <- pA + pB + pC + pD2 + pE2 + pF + guide_area() +
 fig3
 
 ggsave(file.path(fig.main.dir, "03_fig3_SGH_effects.png"),
-       fig3, width = 9, height = 5, dpi = 600)
+       fig3, width = 12, height = 7, dpi = 600)

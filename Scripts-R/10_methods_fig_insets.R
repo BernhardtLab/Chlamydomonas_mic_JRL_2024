@@ -105,8 +105,8 @@ p_tpc
 # Save the figures --------------------------------------------------------
 
 ggsave(file.path(fig.dir, "04_fig_mu_plot.png"), p_grow,
-       width = 2, height = 2, dpi = 400)
+       width = 2, height = 2, dpi = 1000)
 
 ggsave(file.path(fig.dir, "05_fig_TPC_plot.png"), p_tpc,
-       width = 3, height = 3, dpi = 400)
+       width = 3, height = 3, dpi = 1000)
 

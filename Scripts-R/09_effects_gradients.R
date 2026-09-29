@@ -29,6 +29,10 @@
 # Figures-main:
 #   03_fig3_SGH_effects.png                    benefits of microbial inoculation~gradients
 #
+# Data-processed:
+#   13_effects_table_pd_90.csv
+#   14_effects_table_pd_80.csv
+#
 # Load packages -----------------------------------------------------------
 
 library(tidyverse)
@@ -40,6 +44,7 @@ library(patchwork)
 
 mod.dir      <- "Models"
 fig.main.dir <- "Figures-main"
+proc.dir     <- "Data-processed"
 
 # Curve functions (same forms as 04-06) 
 lactin2  <- function(temp, a, b, tmax, dt) exp(a * temp) - exp(a * tmax - (tmax - temp) / dt) + b
@@ -83,13 +88,13 @@ ind.t    <- file.path(mod.dir, "individual")            # individual fits
 fit_none_t <- readRDS(file.path(ind.t, "TPC_mic_none.rds"))
 fit_all  <- readRDS(file.path(ind.t, "TPC_mic_all.rds"))
 
-temp.grid <- with(fit_none$data, seq(min(temp), max(temp), length.out = 1000))
+temp.grid <- with(fit_none_t$data, seq(min(temp), max(temp), length.out = 1000))
 
 # control's thermal optimum (peak of the no-microbe curve) -> reference line
-Fn   <- curve_draws(fit_none, temp.grid, tpc.pars, lactin2)
+Fn   <- curve_draws(fit_none_t, temp.grid, tpc.pars, lactin2)
 topt <- temp.grid[which.max(apply(Fn, 2, median))]
 
-int_all <- interaction_draws(fit_all, fit_none, temp.grid, tpc.pars, lactin2)
+int_all <- interaction_draws(fit_all, fit_none_t, temp.grid, tpc.pars, lactin2)
 si_all  <- summarise_int(int_all, temp.grid)
 
 cat(sprintf("Control Topt ~ %.1f C | interaction clears 0 over %.0f%% of the range\n",
@@ -120,7 +125,7 @@ trts <- c("all", as.character(1:15))
 
 int_t <- purrr::map_dfr(trts, function(m) {
   fit_m <- readRDS(file.path(ind.t, paste0("TPC_mic_", m, ".rds")))
-  summarise_int(interaction_draws(fit_m, fit_none, temp.grid, tpc.pars, lactin2),
+  summarise_int(interaction_draws(fit_m, fit_none_t, temp.grid, tpc.pars, lactin2),
                 temp.grid) |> mutate(mic = m)
 })
 
@@ -165,11 +170,11 @@ sig_any_t <- setdiff(unique(sig_regions_t$mic), "all")   # = c("2","11") for tem
 nit.pars <- c("mumax", "ks")
 
 fit_none_n <- readRDS(file.path(ind.t, "nit_mic_none.rds"))
-nit.grid <- with(fit_none$data, seq(min(nit), max(nit), length.out = 1000))
+nit.grid <- with(fit_none_n$data, seq(min(nit), max(nit), length.out = 1000))
 
 int_n <- purrr::map_dfr(trts, function(m) {
   fit_m <- readRDS(file.path(ind.t, paste0("nit_mic_", m, ".rds")))
-  summarise_int(interaction_draws(fit_m, fit_none, nit.grid, nit.pars, monod),
+  summarise_int(interaction_draws(fit_m, fit_none_n, nit.grid, nit.pars, monod),
                 nit.grid) |> mutate(mic = m)
 })
 
@@ -206,11 +211,11 @@ salt.pars <- c("mmin", "A", "k")
 
 ind.s     <- file.path(mod.dir, "individual")     # salt fits live here
 fit_none_s  <- readRDS(file.path(ind.s, "salt_mic_none.rds"))
-salt.grid <- with(fit_none$data, seq(min(salt), max(salt), length.out = 1000))
+salt.grid <- with(fit_none_s$data, seq(min(salt), max(salt), length.out = 1000))
 
 int_s <- purrr::map_dfr(trts, function(m) {
   fit_m <- readRDS(file.path(ind.s, paste0("salt_mic_", m, ".rds")))
-  summarise_int(interaction_draws(fit_m, fit_none, salt.grid, salt.pars, expdecay),
+  summarise_int(interaction_draws(fit_m, fit_none_s, salt.grid, salt.pars, expdecay),
                 salt.grid) |> mutate(mic = m)
 })
 
@@ -538,3 +543,82 @@ fig3
 
 ggsave(file.path(fig.main.dir, "03_fig3_SGH_effects.png"),
        fig3, width = 12, height = 7, dpi = 600)
+
+# near-significant tendencies: leaning but sub-threshold ----------------------
+near_sig <- function(prefix, ind, fit_none, grid, pars, fun,
+                     pdir_min = 0.90, trts = c("all", as.character(1:15))) {
+  step <- diff(grid)[1]
+  purrr::map_dfr(trts, function(m) {
+    M    <- interaction_draws(readRDS(file.path(ind, paste0(prefix, "_mic_", m, ".rds"))),
+                              fit_none, grid, pars, fun)
+    med  <- apply(M, 2, median)
+    pdir <- apply(M, 2, function(col) max(mean(col > 0), mean(col < 0)))   # directional support
+    h95  <- apply(M, 2, function(col) { d <- hdi(col, ci = 0.95); c(d$CI_low, d$CI_high) })
+    near <- pdir >= pdir_min & !(h95[1, ] > 0 | h95[2, ] < 0)             # leaning, not 95%-sig
+    if (!any(near)) return(NULL)
+    tibble(x = grid, med = med, pdir = pdir)[near, ] |>
+      mutate(dir = ifelse(med > 0, "facilitation", "antagonism")) |>
+      arrange(dir, x) |>
+      group_by(dir) |>
+      mutate(run = cumsum(c(TRUE, diff(x) > 1.5 * step))) |>
+      group_by(dir, run) |>
+      summarise(from = round(min(x), 1), to = round(max(x), 1),
+                x_peak   = round(x[which.max(pdir)], 1),
+                pdir_max = round(max(pdir), 3),
+                med_peak = round(med[which.max(pdir)], 3),
+                .groups = "drop") |>
+      mutate(mic = m) |> select(-run)
+  })
+}
+
+near_all <- bind_rows(
+  near_sig("TPC",  ind.t, fit_none_t, temp.grid, tpc.pars, lactin2) |> mutate(gradient = "temperature"),
+  near_sig("nit",  ind.t, fit_none_n, nit.grid,  nit.pars, monod)   |> mutate(gradient = "nitrogen"),
+  near_sig("salt", ind.s, fit_none_s, salt.grid, salt.pars, expdecay)|> mutate(gradient = "salt")
+) |>
+  mutate(species = ifelse(mic == "all", "community", sp[mic])) |>
+  select(gradient, mic, species, dir, from, to, x_peak, pdir_max, med_peak) |>
+  arrange(match(gradient, c("temperature","nitrogen","salt")), desc(pdir_max))
+
+write.csv(near_all, file.path(proc.dir, "13_effects_table_pd_90.csv"), row.names = FALSE)
+
+print(as.data.frame(near_all), row.names = FALSE)
+
+near_sig80 <- function(prefix, ind, fit_none, grid, pars, fun,
+                     pdir_min = 0.80, trts = c("all", as.character(1:15))) {
+  step <- diff(grid)[1]
+  purrr::map_dfr(trts, function(m) {
+    M    <- interaction_draws(readRDS(file.path(ind, paste0(prefix, "_mic_", m, ".rds"))),
+                              fit_none, grid, pars, fun)
+    med  <- apply(M, 2, median)
+    pdir <- apply(M, 2, function(col) max(mean(col > 0), mean(col < 0)))   # directional support
+    h95  <- apply(M, 2, function(col) { d <- hdi(col, ci = 0.95); c(d$CI_low, d$CI_high) })
+    near <- pdir >= pdir_min & !(h95[1, ] > 0 | h95[2, ] < 0)             # leaning, not 95%-sig
+    if (!any(near)) return(NULL)
+    tibble(x = grid, med = med, pdir = pdir)[near, ] |>
+      mutate(dir = ifelse(med > 0, "facilitation", "antagonism")) |>
+      arrange(dir, x) |>
+      group_by(dir) |>
+      mutate(run = cumsum(c(TRUE, diff(x) > 1.5 * step))) |>
+      group_by(dir, run) |>
+      summarise(from = round(min(x), 1), to = round(max(x), 1),
+                x_peak   = round(x[which.max(pdir)], 1),
+                pdir_max = round(max(pdir), 3),
+                med_peak = round(med[which.max(pdir)], 3),
+                .groups = "drop") |>
+      mutate(mic = m) |> select(-run)
+  })
+}
+
+near_all80 <- bind_rows(
+  near_sig80("TPC",  ind.t, fit_none_t, temp.grid, tpc.pars, lactin2) |> mutate(gradient = "temperature"),
+  near_sig80("nit",  ind.t, fit_none_n, nit.grid,  nit.pars, monod)   |> mutate(gradient = "nitrogen"),
+  near_sig80("salt", ind.s, fit_none_s, salt.grid, salt.pars, expdecay)|> mutate(gradient = "salt")
+) |>
+  mutate(species = ifelse(mic == "all", "community", sp[mic])) |>
+  select(gradient, mic, species, dir, from, to, x_peak, pdir_max, med_peak) |>
+  arrange(match(gradient, c("temperature","nitrogen","salt")), desc(pdir_max))
+
+write.csv(near_all80, file.path(proc.dir, "14_effects_table_pd_80.csv"), row.names = FALSE)
+
+print(as.data.frame(near_all80), row.names = FALSE)

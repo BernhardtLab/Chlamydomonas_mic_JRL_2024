@@ -40,7 +40,6 @@
 #   06_fig_nit_monod_fits.png           fitted curves over the data for both models
 #   07_fig_nit_monod_effects.png        microbe-vs-control effect posteriors
 
-
 # Load packages -----------------------------------------------------------
 
 # One-time setup (run once per machine, NOT on every source):

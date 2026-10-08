@@ -118,6 +118,7 @@ ggsave(file.path(fig.dir, "01_Fig_mu_estimation_check.png"), fig1,
 # uM, salt = 0 g/L; the N and salt gradients are run at 30 C.
 
 aa <- mu %>% filter(mic == "none")
+
 bio <- bind_rows(
   aa %>% filter(nit == 1000, salt == 0)  %>% transmute(axis = "Temperature (C)", level = temp, mu),
   aa %>% filter(temp == 30, salt == 0)   %>% transmute(axis = "Nitrogen (uM)",   level = nit,  mu),

@@ -1,0 +1,36 @@
+"gradient","mic","treatment","effect","from","to","x_peak","peak_RFU","frac_sig"
+"temperature","all","community","lowers peak abundance",11.9,11.9,11.9,-313,0
+"temperature","all","community","lowers peak abundance",12,37.1,28.6,-800,0.72
+"temperature","1","E. meliloti","lowers peak abundance",26.7,26.7,26.7,-297,0
+"temperature","1","E. meliloti","lowers peak abundance",26.8,27.2,27.2,-311,0.01
+"temperature","1","E. meliloti","lowers peak abundance",27.3,37.8,34.6,-462,0.3
+"temperature","1","E. meliloti","lowers peak abundance",37.9,38,37.9,-388,0
+"temperature","1","E. meliloti","lowers peak abundance",38.1,38.2,38.1,-378,0
+"temperature","11","P. protegens","lowers peak abundance",8,37.9,28.3,-1199,0.86
+"temperature","13","R. qingshengii","lowers peak abundance",19.1,19.1,19.1,-280,0
+"temperature","13","R. qingshengii","lowers peak abundance",19.4,39,32.6,-707,0.56
+"nitrogen","all","community","lowers peak abundance",1,1000,1000,-1535,1
+"nitrogen","1","E. meliloti","lowers peak abundance",54,1000,1000,-695,0.95
+"nitrogen","2","E. meliloti","lowers peak abundance",277,1000,1000,-563,0.72
+"nitrogen","4","P. psychrotolerans","lowers peak abundance",73,78,78,-73,0.01
+"nitrogen","4","P. psychrotolerans","lowers peak abundance",80,1000,1000,-671,0.92
+"nitrogen","7","P. sulfinovorans","lowers peak abundance",9,13,13,-12,0.01
+"nitrogen","7","P. sulfinovorans","lowers peak abundance",15,973,970,-291,0.96
+"nitrogen","11","P. protegens","lowers peak abundance",1,1000,1000,-2142,1
+"nitrogen","13","R. qingshengii","lowers peak abundance",1,1000,1000,-1054,1
+"salt","all","community","lowers peak abundance",0,3.1,1.25,-3948,0.26
+"salt","all","community","raises peak abundance",3.54,6.23,3.84,53,0.23
+"salt","all","community","raises peak abundance",6.34,6.41,6.34,14,0.01
+"salt","1","E. meliloti","lowers peak abundance",0,2.79,1.59,-1848,0.23
+"salt","2","E. meliloti","lowers peak abundance",0,1.97,0.85,-1334,0.17
+"salt","2","E. meliloti","raises peak abundance",2.44,4.16,2.71,656,0.14
+"salt","8","B. aerius","raises peak abundance",2.59,3.45,2.67,373,0.07
+"salt","11","P. protegens","lowers peak abundance",0,3.5,1.3,-4105,0.29
+"salt","12","S. pituitosa","lowers peak abundance",1.23,2.77,1.96,-1028,0.13
+"salt","13","R. qingshengii","raises peak abundance",2.53,2.55,2.55,560,0
+"salt","13","R. qingshengii","raises peak abundance",2.57,3.82,2.61,568,0.11
+"salt","13","R. qingshengii","raises peak abundance",3.89,3.9,3.89,115,0
+"salt","15","P. putida","lowers peak abundance",0,1.45,0.72,-472,0.12
+"salt","15","P. putida","lowers peak abundance",1.48,1.48,1.48,-381,0
+"salt","15","P. putida","raises peak abundance",2.35,3.24,2.53,497,0.08
+"salt","15","P. putida","raises peak abundance",3.27,3.27,3.27,160,0

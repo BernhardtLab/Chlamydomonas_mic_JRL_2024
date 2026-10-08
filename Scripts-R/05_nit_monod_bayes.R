@@ -105,8 +105,7 @@ cat("Monod data:", nrow(df.n), "wells |",
     "blocks", paste(levels(df.n$block), collapse = ","), "\n")
 
 ## VERIFY: quick pooled nls to ballpark the priors (ignores structure).
-## Use these MLEs to centre the logmumax / logks intercept priors below
-## (remember the priors are on the log scale, so use log(mumax), log(ks)).
+
 print(nls(mu ~ mumax * nit / (ks + nit), data = df.n,
           start = list(mumax = 1.7, ks = 50)))
 

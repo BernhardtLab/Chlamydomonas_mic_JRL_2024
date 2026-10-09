@@ -23,6 +23,7 @@ library(brms)
 library(posterior)     # as_draws_df()
 library(bayestestR)    # hdi()
 library(patchwork)
+library(ggrepel)
 
 # Set paths ---------------------------------------------------------------
 
@@ -518,7 +519,7 @@ sig_union <- as.character(sort(as.integer(Reduce(union, list(sig_any_t, sig_any_
 brks     <- c("all", sig_union, "Others")
 labs_vec <- c(expression("Microbial community"), do.call(c, lapply(sig_union, lab_it)), expression("Others"))
 
-# Build the panels --------------------------------------------------------
+## Build the panels --------------------------------------------------------
 
 ctrl_panel <- function(fits, grid, pars, fun, xcol, xlab, ttl, vx) {
   Fs <- summarise_int(curve_draws(fits[["none"]], grid, pars, fun), grid)
@@ -618,3 +619,243 @@ sig_summary <- bind_rows(
 write.csv(sig_summary, file.path(proc.dir, "15_peak_abd_significant_microbial_effects.csv"), row.names = FALSE)
 cat("\n== peak abundance: significant microbial effects (95% HDI) ==\n")
 print(as.data.frame(sig_summary), row.names = FALSE)
+
+# Microbial effects on traits ---------------------------------------------
+
+derive_T <- function(a,b,tmax,dt) {
+  f <- function(x) lactin2(x,a,b,tmax,dt)
+  o <- tryCatch(optimize(f, c(5,45), maximum=TRUE), error=function(e) NULL)
+  if (is.null(o) || !is.finite(o$objective) || o$objective <= 0) return(c(Topt=NA,peak=NA,Tbr=NA))
+  To <- o$maximum; pk <- o$objective; half <- pk/2
+  lo <- tryCatch(uniroot(function(x) f(x)-half, c(0,To))$root,  error=function(e) NA_real_)
+  hi <- tryCatch(uniroot(function(x) f(x)-half, c(To,50))$root, error=function(e) NA_real_)
+  c(Topt=To, peak=pk, Tbr=hi-lo)
+}
+
+derive_N <- function(mumax,ks) c(mumax=mumax, ks=ks, affinity=mumax/ks)
+
+derive_S <- function(U,L,b,m) {
+  abd0 <- L + (U-L)/(1+exp(-b*m)); t <- abd0/2
+  st <- if (is.finite(abd0) && U>t && t>L && b>0) m + log((U-t)/(t-L))/b else NA_real_
+  c(abd_max=abd0, salt_tol=st, m=m)
+}
+
+trT <- function(D){ M<-t(mapply(derive_T, bp(D,"a"),bp(D,"b"),bp(D,"tmax"),bp(D,"dt")))
+M[,"peak"] <- M[,"peak"]*1000; M }
+
+trN <- function(D){ M<-t(mapply(derive_N, bp(D,"mumax"),bp(D,"ks")))
+M[,c("mumax","affinity")] <- M[,c("mumax","affinity")]*1000; M }
+
+trS <- function(D){ M<-t(mapply(derive_S, bp(D,"U"),bp(D,"L"),bp(D,"b"),bp(D,"m")))
+M[,"abd_max"] <- M[,"abd_max"]*1000; M }
+
+mk_tr <- function(fits, ex) setNames(lapply(names(fits), \(m) ex(as.matrix(fits[[m]]))), names(fits))
+tr_ind.T <- mk_tr(fits.ind, trT)
+tr_ind.N <- mk_tr(fits.n,   trN)
+tr_ind.S <- mk_tr(fits.s,   trS)
+
+saveRDS(tr_ind.T, file.path(mod.dir, "07_temp_peak_abd_tr_ind.rds"))
+saveRDS(tr_ind.N, file.path(mod.dir, "08_nit_peak_abd_tr_ind.rds"))
+saveRDS(tr_ind.S, file.path(mod.dir, "09_salt_peak_abd_tr_ind.rds"))
+
+summ_traits <- function(tr) purrr::map_dfr(colnames(tr), function(v) {
+  x <- tr[, v]; ok <- x[is.finite(x)]; h <- bayestestR::hdi(ok, ci = 0.95)
+  tibble(trait = v, median = median(ok), lo = h$CI_low, hi = h$CI_high, pNA = mean(!is.finite(x)))
+})
+
+contrast_tbl <- function(tr_list, trait.set) {
+  none <- tr_list[["none"]]
+  purrr::map_dfr(setdiff(names(tr_list), "none"), function(m) {
+    mm <- tr_list[[m]]
+    purrr::map_dfr(trait.set, function(v) {
+      d <- mm[, v] - none[, v]; ok <- d[is.finite(d)]; h <- bayestestR::hdi(ok, ci = 0.95)
+      tibble(mic = m, trait = v, delta = median(ok), lo = h$CI_low, hi = h$CI_high,
+             excl0 = h$CI_low > 0 | h$CI_high < 0, pNA = mean(!is.finite(d)))
+    })
+  })
+}
+
+abd_traits <- bind_rows(
+  purrr::map_dfr(names(tr_ind.T), ~ summ_traits(tr_ind.T[[.x]]) |> mutate(mic=.x, axis="temperature")),
+  purrr::map_dfr(names(tr_ind.N), ~ summ_traits(tr_ind.N[[.x]]) |> mutate(mic=.x, axis="nitrogen")),
+  purrr::map_dfr(names(tr_ind.S), ~ summ_traits(tr_ind.S[[.x]]) |> mutate(mic=.x, axis="salt")))
+write.csv(abd_traits, file.path(proc.dir, "16_peak_abd_traits.csv"), row.names=FALSE)
+
+abd_eff <- bind_rows(
+  contrast_tbl(tr_ind.T, c("Topt","peak","Tbr"))      |> mutate(axis="temperature"),
+  contrast_tbl(tr_ind.N, c("mumax","ks","affinity"))  |> mutate(axis="nitrogen"),
+  contrast_tbl(tr_ind.S, c("abd_max","salt_tol","m")) |> mutate(axis="salt"))
+write.csv(abd_eff, file.path(proc.dir, "17_abd_microbe_effects.csv"), row.names=FALSE)
+
+cat("\n== abundance: treatments clearing 0 vs control, per trait ==\n")
+abd_eff |> group_by(axis, trait) |> summarise(n_sig = sum(excl0), .groups="drop") |> print(n=Inf)
+
+## Figure ------------------------------------------------------------------
+
+tr <- list(temperature = tr_ind.T, nitrogen = tr_ind.N, salt = tr_ind.S)
+
+emergent_axis <- function(trA) {
+  mics <- setdiff(names(trA), c("none","all")); traits <- colnames(trA[["all"]])
+  n <- min(vapply(trA, nrow, integer(1)))
+  none <- trA[["none"]][seq_len(n), , drop=FALSE]; allc <- trA[["all"]][seq_len(n), , drop=FALSE]
+  purrr::map_dfr(traits, function(v) {
+    mic <- sapply(mics, function(m) trA[[m]][seq_len(n), v])          # n x 15
+    E.mean <- allc[, v] - rowMeans(mic, na.rm=TRUE)
+    E.sum  <- (allc[, v] - none[, v]) - rowSums(mic - none[, v], na.rm=TRUE)
+    hm <- bayestestR::hdi(E.mean[is.finite(E.mean)], ci=0.95)
+    hs <- bayestestR::hdi(E.sum[is.finite(E.sum)],  ci=0.95)
+    tibble(trait=v, d_mean=median(E.mean,na.rm=TRUE), lo_mean=hm$CI_low, hi_mean=hm$CI_high,
+           sig_mean = hm$CI_low>0 | hm$CI_high<0,
+           d_sum=median(E.sum,na.rm=TRUE), lo_sum=hs$CI_low, hi_sum=hs$CI_high,
+           sig_sum = hs$CI_low>0 | hs$CI_high<0)
+  })
+}
+
+emergent <- purrr::imap_dfr(tr, ~ emergent_axis(.x) |> mutate(axis=.y, .before=1))
+cat("\n== emergent community effects on peak abundance (vs mean & sum) ==\n")
+print(as.data.frame(emergent |> mutate(across(where(is.numeric), ~round(.x,1)))), row.names=FALSE)
+
+A <- abd_eff |> transmute(axis, trait,
+                          type = ifelse(mic=="all","community_vs_none","microbe_vs_none"),
+                          contrast = ifelse(mic=="all","all", paste0("mic_",mic)),
+                          median = delta, lo, hi, sig = excl0)
+
+B <- emergent |> rename(median_mean=d_mean, median_sum=d_sum) |>
+  pivot_longer(-c(axis,trait), names_to=c(".value","null"), names_pattern="(median|lo|hi|sig)_(mean|sum)") |>
+  transmute(axis, trait, type=paste0("emergent_",null),
+            contrast=ifelse(null=="mean","all - mean(15)","all - sum(15)"), median, lo, hi, sig)
+
+lev <- c("microbe_vs_none","community_vs_none","emergent_mean","emergent_sum")
+stat.tbl <- bind_rows(A,B) |> mutate(across(c(median,lo,hi), ~signif(.x,3)),
+                                     type=factor(type,levels=lev)) |> arrange(axis,trait,type,contrast)
+
+write.csv(stat.tbl, file.path(proc.dir,"22_abd_effects_stat_sum.csv"), row.names=FALSE)
+cat("\n== significant (individual model) ==\n"); print(as.data.frame(filter(stat.tbl, sig)), row.names=FALSE)
+
+sp <- c("1"="Ensifer meliloti Em1021","2"="Ensifer meliloti Em1022","3"="Saccharomyces cerevisiae",
+        "4"="Pseudarthrobacter psychrotolerans","5"="Nesterenkonia halotolerans",
+        "6"="Paenisporosarcina macmurdoensis","7"="Pseudarthrobacter sulfinovorans","8"="Bacillus aerius",
+        "9"="Citrobacter braakii","10"="Rhizobium rosettiformans","11"="Pseudomonas protogens",
+        "12"="Sphingomonas pituitosa","13"="Rhodococcus qingshengii","14"="Rhizorhabdus phycosphaerae",
+        "15"="Pseudomonas putida")
+mic_labs <- c(none="Control (none)", all="Microbial community", sp)
+lev <- rev(c("none", as.character(1:15), "all"))          # none top, community bottom
+cols <- c(none="red2", microbe="black", community="mediumblue")
+
+tr.sum  <- abd_traits
+sig.tab <- abd_eff |> select(axis, mic, trait, excl0)
+
+fdat <- function(ax, tr_name) {
+  m <- tr.sum  |> filter(axis==ax, trait==tr_name) |> select(mic, x=median, lo, hi)
+  s <- sig.tab |> filter(axis==ax, trait==tr_name) |> select(mic, sig=excl0)
+  left_join(m, s, by="mic") |>
+    mutate(sig = coalesce(sig, FALSE),
+           type = case_when(mic=="none"~"none", mic=="all"~"community", TRUE~"microbe"),
+           alpha = ifelse(type=="none" | sig, 1, 0.3),
+           mic = factor(mic, levels=lev))
+}
+
+expect <- function(ax, tr_name) {
+  trA <- tr[[ax]]; mics <- setdiff(names(trA), c("none","all")); n <- min(vapply(trA, nrow, integer(1)))
+  median(rowMeans(sapply(mics, function(m) trA[[m]][seq_len(n), tr_name]), na.rm=TRUE), na.rm=TRUE)
+}
+
+emg_sig <- function(ax, tr_name) isTRUE(emergent$sig_mean[emergent$axis==ax & emergent$trait==tr_name])
+
+forest_panel <- function(ax, tr_name, xlab, title, show_y=FALSE) {
+  d <- fdat(ax, tr_name); none_x <- d$x[d$mic=="none"]; allrow <- filter(d, mic=="all")
+  seg <- data.frame(x=expect(ax,tr_name), xend=allrow$x, mic=allrow$mic); es <- emg_sig(ax,tr_name)
+  ggplot(d, aes(x, mic, colour=type)) +
+    geom_vline(xintercept=none_x, linetype="dashed", linewidth=0.4, colour="grey20") +
+    geom_segment(data=seg, aes(x=x, xend=xend, y=mic, yend=mic), colour="mediumblue",
+                 linewidth=if(es) 0.7 else 0.4, linetype=if(es) "solid" else "dotted", inherit.aes=FALSE) +
+    geom_point(data=seg, aes(x=x, y=mic), shape=21, fill=NA, colour="mediumblue", size=2.6, stroke=0.6, inherit.aes=FALSE) +
+    geom_errorbarh(aes(xmin=lo, xmax=hi, alpha=alpha), height=0, linewidth=0.7) +
+    geom_point(aes(alpha=alpha), size=2) + scale_alpha_identity() +
+    scale_colour_manual(values=cols) + scale_y_discrete(labels=mic_labs) +
+    labs(x=xlab, y=NULL, title=title) + theme_classic() +
+    theme(axis.title=element_text(size=10), axis.text.x=element_text(size=9),
+          axis.text.y = if(show_y) element_text(size=8, hjust=1, face="italic") else element_blank(),
+          axis.ticks.y = if(show_y) element_line() else element_blank(),
+          plot.title=element_text(size=10, face="bold", hjust=0.03), legend.position="none")
+}
+
+xlab_abd <- expression("Peak abundance (RFU)")
+pA <- forest_panel("temperature","peak",    xlab_abd, "A) Temperature", show_y=TRUE)
+pB <- forest_panel("nitrogen",   "mumax",   xlab_abd, "B) Nitrogen")
+pC <- forest_panel("salt",       "abd_max", xlab_abd, "C) Salt")
+pD <- forest_panel("temperature","Tbr", expression("Thermal breadth" ~ italic("T")[italic(br)] ~ "(°C)"), "D) Temperature", show_y=TRUE)
+pE <- forest_panel("nitrogen","affinity", expression("Nitrogen affinity" ~ italic("\u03bc")[italic(max)]/italic("K")[italic(S)] ~ "(RFU " * mu * "M"^-1 * ")"), "E) Nitrogen")
+pF <- forest_panel("salt","salt_tol", expression("Salt tolerance" ~ italic("S")[50] ~ (g~L^-1)), "F) Salt")
+
+fig2 <- (pA | pB | pC) / (pD | pE | pF)
+ggsave(file.path(fig.dir, "15_peak_abd_fig_trait_effects.png"), fig2, width=12, height=9, dpi=300)
+
+# Correlational plots -----------------------------------------------------
+
+mumax_trait <- c(temperature="r.max",  nitrogen="mumax", salt="mu_max")   # growth
+abd_trait   <- c(temperature="peak",   nitrogen="mumax", salt="abd_max")  # yield
+eff.files   <- c(temperature="Data-processed/05_TPC_microbe_effects.csv",
+                 nitrogen   ="Data-processed/07_nit_monod_microbe_effects.csv",
+                 salt       ="Data-processed/09_salt_microbe_effects.csv")
+
+growth <- purrr::imap_dfr(eff.files, ~ read.csv(.x) |>
+                            dplyr::filter(method == "individual", trait == mumax_trait[[.y]]) |>
+                            transmute(axis = .y, mic = as.character(mic), g_delta = delta))
+
+abund <- abd_eff |>
+  dplyr::filter((axis=="temperature" & trait=="peak") |
+                  (axis=="nitrogen"    & trait=="mumax") |
+                  (axis=="salt"        & trait=="abd_max")) |>
+  transmute(axis, mic = as.character(mic), a_delta = delta)
+
+sp <- c("1"="E. meliloti 1","2"="E. meliloti 2","3"="S. cerevisiae","4"="P. psychrotolerans",
+        "5"="N. halotolerans","6"="P. macmurdoensis","7"="P. sulfinovorans","8"="B. aerius",
+        "9"="C. braakii","10"="R. rosettiformans","11"="P. protegens","12"="S. pituitosa",
+        "13"="R. qingshengii","14"="R. phycosphaerae","15"="P. putida")
+
+ty <- left_join(growth, abund, by = c("axis","mic")) |>
+  group_by(axis) |>
+  mutate(gz = as.numeric(scale(g_delta)), az = as.numeric(scale(a_delta))) |>
+  ungroup() |>
+  mutate(kind = ifelse(mic == "all", "Community", "microbe"),
+         axis = factor(axis, levels = c("temperature","nitrogen","salt")),
+         lab  = ifelse(mic == "all", "Community",
+                       ifelse(pmax(abs(gz), abs(az)) > 1.3, sp[mic], NA)))
+
+ty <- ty |>
+  mutate(lab = ifelse(mic == "all", "'Community'",
+                      ifelse(pmax(abs(gz), abs(az)) > 1.3, paste0("italic('", sp[mic], "')"), NA)))
+
+corr <- ty |> group_by(axis) |> group_modify(~{
+  ca <- cor.test(.x$gz, .x$az)                         # all 16
+  s  <- .x[.x$mic != "all", ]; cn <- cor.test(s$gz, s$az)   # drop community
+  tibble(r_all = ca$estimate, p_all = ca$p.value, lo_all = ca$conf.int[1], hi_all = ca$conf.int[2],
+         r_no  = cn$estimate, p_no  = cn$p.value, lo_no  = cn$conf.int[1], hi_no  = cn$conf.int[2])
+}) |> ungroup() |> mutate(across(where(is.numeric), ~round(.x, 3)))
+
+print(as.data.frame(corr), row.names = FALSE)
+# corrs and P-values: T—-0.165 (0.541), N— -0.300 (0.258), S—0.144 (0.596)
+
+facet_lab <- as_labeller(c(temperature="A) Temperature", nitrogen="B) Nitrogen", salt="C) Salt"))
+
+p.cor <- ggplot(ty, aes(az, gz)) +
+  geom_hline(yintercept = 0, linetype = "dotted", colour = "grey70") +
+  geom_vline(xintercept = 0, linetype = "dotted", colour = "grey70") +
+  geom_smooth(method = "lm", se = FALSE, colour = "grey55", linewidth = 0.5) +
+  geom_point(aes(colour = kind, size = kind)) +
+  geom_text_repel(aes(label = lab), parse = TRUE, size = 2.8,
+                  min.segment.length = 0, max.overlaps = Inf, segment.colour = "grey70") +
+  geom_text(data = corr, aes(x = -Inf, y = Inf, label = txt), inherit.aes = FALSE,
+            hjust = -0.05, vjust = 1.5, size = 3) +
+  facet_wrap(~ axis, nrow = 1, labeller = facet_lab) +
+  scale_colour_manual(values = c(microbe = "grey30", Community = "mediumblue")) +
+  scale_size_manual(values = c(microbe = 2, Community = 3.4)) +
+  labs(x = "Effect on peak abundance (standardized)",
+       y = "Effect on growth rate (standardized)") +
+  theme_bw() + theme(legend.position = "none",
+                     strip.text = element_text(face = "bold", hjust = 0.02))
+
+p.cor
+
+ggsave(file.path(fig.dir, "16_grt_peak_abd_t-offs.png"), p.cor, width=12, height=7, dpi=300)

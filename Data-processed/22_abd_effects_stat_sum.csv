@@ -1,0 +1,163 @@
+"axis","trait","type","contrast","median","lo","hi","sig"
+"nitrogen","affinity","microbe_vs_none","mic_1",-1.01,-2.19,0.191,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_10",0.0912,-0.932,1.09,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_11",-3.44,-4.6,-2,TRUE
+"nitrogen","affinity","microbe_vs_none","mic_12",-0.0906,-1.06,0.948,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_13",-1.46,-2.62,-0.249,TRUE
+"nitrogen","affinity","microbe_vs_none","mic_14",-0.264,-1.27,0.761,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_15",-0.291,-1.42,0.754,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_2",-0.276,-1.45,0.975,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_3",-0.167,-1.17,0.841,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_4",-0.961,-2.11,0.228,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_5",-0.247,-1.3,0.865,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_6",-0.239,-1.28,0.781,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_7",-0.947,-1.9,0.0345,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_8",-0.0025,-1.04,0.994,FALSE
+"nitrogen","affinity","microbe_vs_none","mic_9",-0.621,-1.6,0.387,FALSE
+"nitrogen","affinity","community_vs_none","all",-2.59,-3.57,-1.61,TRUE
+"nitrogen","affinity","emergent_mean","all - mean(15)",-1.95,-2.58,-1.22,TRUE
+"nitrogen","affinity","emergent_sum","all - sum(15)",7.05,-2.79,18.2,FALSE
+"nitrogen","ks","microbe_vs_none","mic_1",-102,-629,392,FALSE
+"nitrogen","ks","microbe_vs_none","mic_10",113,-352,585,FALSE
+"nitrogen","ks","microbe_vs_none","mic_11",-326,-824,190,FALSE
+"nitrogen","ks","microbe_vs_none","mic_12",81.3,-363,549,FALSE
+"nitrogen","ks","microbe_vs_none","mic_13",-204,-679,314,FALSE
+"nitrogen","ks","microbe_vs_none","mic_14",149,-326,636,FALSE
+"nitrogen","ks","microbe_vs_none","mic_15",45.6,-417,541,FALSE
+"nitrogen","ks","microbe_vs_none","mic_2",-244,-691,178,FALSE
+"nitrogen","ks","microbe_vs_none","mic_3",35,-432,471,FALSE
+"nitrogen","ks","microbe_vs_none","mic_4",-110,-611,394,FALSE
+"nitrogen","ks","microbe_vs_none","mic_5",90.8,-382,624,FALSE
+"nitrogen","ks","microbe_vs_none","mic_6",158,-335,645,FALSE
+"nitrogen","ks","microbe_vs_none","mic_7",169,-327,660,FALSE
+"nitrogen","ks","microbe_vs_none","mic_8",46.9,-429,487,FALSE
+"nitrogen","ks","microbe_vs_none","mic_9",118,-360,593,FALSE
+"nitrogen","ks","community_vs_none","all",-149,-631,352,FALSE
+"nitrogen","ks","emergent_mean","all - mean(15)",-164,-514,235,FALSE
+"nitrogen","ks","emergent_sum","all - sum(15)",-352,-4470,4640,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_1",-1790,-3900,442,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_10",909,-1460,3150,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_11",-5080,-6830,-3450,TRUE
+"nitrogen","mumax","microbe_vs_none","mic_12",462,-1770,2640,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_13",-2790,-4820,-696,TRUE
+"nitrogen","mumax","microbe_vs_none","mic_14",704,-1610,2920,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_15",-5.32,-2230,2200,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_2",-1980,-3930,-23.1,TRUE
+"nitrogen","mumax","microbe_vs_none","mic_3",53.3,-2150,2110,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_4",-1760,-4020,408,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_5",342,-2020,2780,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_6",814,-1620,3260,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_7",-29.4,-2210,2210,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_8",308,-2020,2470,FALSE
+"nitrogen","mumax","microbe_vs_none","mic_9",62.1,-2140,2280,FALSE
+"nitrogen","mumax","community_vs_none","all",-3600,-5530,-1750,TRUE
+"nitrogen","mumax","emergent_mean","all - mean(15)",-3000,-4160,-1750,TRUE
+"nitrogen","mumax","emergent_sum","all - sum(15)",5560,-14600,29000,FALSE
+"salt","abd_max","microbe_vs_none","mic_1",-1560,-1960,-1140,TRUE
+"salt","abd_max","microbe_vs_none","mic_10",280,-226,785,FALSE
+"salt","abd_max","microbe_vs_none","mic_11",-3290,-3800,-2810,TRUE
+"salt","abd_max","microbe_vs_none","mic_12",-64.2,-678,643,FALSE
+"salt","abd_max","microbe_vs_none","mic_13",643,-471,1720,FALSE
+"salt","abd_max","microbe_vs_none","mic_14",316,-188,867,FALSE
+"salt","abd_max","microbe_vs_none","mic_15",-468,-913,-9.18,TRUE
+"salt","abd_max","microbe_vs_none","mic_2",-1320,-1750,-854,TRUE
+"salt","abd_max","microbe_vs_none","mic_3",-256,-675,192,FALSE
+"salt","abd_max","microbe_vs_none","mic_4",-261,-784,268,FALSE
+"salt","abd_max","microbe_vs_none","mic_5",-38.4,-452,328,FALSE
+"salt","abd_max","microbe_vs_none","mic_6",124,-367,707,FALSE
+"salt","abd_max","microbe_vs_none","mic_7",-39.4,-559,493,FALSE
+"salt","abd_max","microbe_vs_none","mic_8",234,-397,904,FALSE
+"salt","abd_max","microbe_vs_none","mic_9",384,-125,920,FALSE
+"salt","abd_max","community_vs_none","all",-3070,-3420,-2760,TRUE
+"salt","abd_max","emergent_mean","all - mean(15)",-2730,-2930,-2530,TRUE
+"salt","abd_max","emergent_sum","all - sum(15)",2100,-2170,6920,FALSE
+"salt","m","microbe_vs_none","mic_1",-0.189,-0.385,0.00509,FALSE
+"salt","m","microbe_vs_none","mic_10",-0.068,-0.239,0.0937,FALSE
+"salt","m","microbe_vs_none","mic_11",-1.53,-3.14,-0.889,TRUE
+"salt","m","microbe_vs_none","mic_12",-0.26,-0.477,-0.0261,TRUE
+"salt","m","microbe_vs_none","mic_13",0.0068,-0.283,0.307,FALSE
+"salt","m","microbe_vs_none","mic_14",-0.0741,-0.248,0.097,FALSE
+"salt","m","microbe_vs_none","mic_15",0.171,0.00901,0.337,TRUE
+"salt","m","microbe_vs_none","mic_2",0.319,0.08,0.557,TRUE
+"salt","m","microbe_vs_none","mic_3",-0.0169,-0.175,0.142,FALSE
+"salt","m","microbe_vs_none","mic_4",0.00414,-0.177,0.168,FALSE
+"salt","m","microbe_vs_none","mic_5",0.0128,-0.132,0.165,FALSE
+"salt","m","microbe_vs_none","mic_6",-0.0487,-0.243,0.133,FALSE
+"salt","m","microbe_vs_none","mic_7",-0.0525,-0.235,0.116,FALSE
+"salt","m","microbe_vs_none","mic_8",-0.000735,-0.213,0.201,FALSE
+"salt","m","microbe_vs_none","mic_9",-0.0359,-0.223,0.13,FALSE
+"salt","m","community_vs_none","all",-2.91,-3.63,-2.17,TRUE
+"salt","m","emergent_mean","all - mean(15)",-2.78,-3.5,-2.04,TRUE
+"salt","m","emergent_sum","all - sum(15)",-0.992,-2.94,1.28,FALSE
+"salt","salt_tol","microbe_vs_none","mic_1",-0.177,-0.359,0.0139,FALSE
+"salt","salt_tol","microbe_vs_none","mic_10",-0.0681,-0.237,0.0918,FALSE
+"salt","salt_tol","microbe_vs_none","mic_11",-1.25,-1.51,-0.958,TRUE
+"salt","salt_tol","microbe_vs_none","mic_12",-0.257,-0.48,-0.0384,TRUE
+"salt","salt_tol","microbe_vs_none","mic_13",0.0178,-0.274,0.293,FALSE
+"salt","salt_tol","microbe_vs_none","mic_14",-0.0737,-0.244,0.0972,FALSE
+"salt","salt_tol","microbe_vs_none","mic_15",0.173,0.013,0.337,TRUE
+"salt","salt_tol","microbe_vs_none","mic_2",0.331,0.0898,0.557,TRUE
+"salt","salt_tol","microbe_vs_none","mic_3",-0.016,-0.17,0.142,FALSE
+"salt","salt_tol","microbe_vs_none","mic_4",0.00991,-0.162,0.176,FALSE
+"salt","salt_tol","microbe_vs_none","mic_5",0.0129,-0.131,0.162,FALSE
+"salt","salt_tol","microbe_vs_none","mic_6",-0.0469,-0.236,0.132,FALSE
+"salt","salt_tol","microbe_vs_none","mic_7",-0.0519,-0.232,0.114,FALSE
+"salt","salt_tol","microbe_vs_none","mic_8",0.00371,-0.208,0.194,FALSE
+"salt","salt_tol","microbe_vs_none","mic_9",-0.0353,-0.218,0.129,FALSE
+"salt","salt_tol","community_vs_none","all",-1.22,-1.37,-1.08,TRUE
+"salt","salt_tol","emergent_mean","all - mean(15)",-1.13,-1.22,-1.01,TRUE
+"salt","salt_tol","emergent_sum","all - sum(15)",0.25,-1.39,1.86,FALSE
+"temperature","Tbr","microbe_vs_none","mic_1",3.11,-1.08,7.7,FALSE
+"temperature","Tbr","microbe_vs_none","mic_10",2.38,-2.24,7.75,FALSE
+"temperature","Tbr","microbe_vs_none","mic_11",-3.51,-8.5,1.71,FALSE
+"temperature","Tbr","microbe_vs_none","mic_12",1.39,-2.56,5.31,FALSE
+"temperature","Tbr","microbe_vs_none","mic_13",3.13,-2,9.32,FALSE
+"temperature","Tbr","microbe_vs_none","mic_14",0.948,-2.59,5.02,FALSE
+"temperature","Tbr","microbe_vs_none","mic_15",0.882,-2.68,4.04,FALSE
+"temperature","Tbr","microbe_vs_none","mic_2",3.3,-1.39,9.06,FALSE
+"temperature","Tbr","microbe_vs_none","mic_3",3.21,-1.51,8.75,FALSE
+"temperature","Tbr","microbe_vs_none","mic_4",1.78,-1.46,5.36,FALSE
+"temperature","Tbr","microbe_vs_none","mic_5",1.17,-2.68,5.33,FALSE
+"temperature","Tbr","microbe_vs_none","mic_6",2.66,-1.82,7.35,FALSE
+"temperature","Tbr","microbe_vs_none","mic_7",1.31,-3.16,6.62,FALSE
+"temperature","Tbr","microbe_vs_none","mic_8",1.46,-2.09,5.6,FALSE
+"temperature","Tbr","microbe_vs_none","mic_9",2.59,-2.21,8.75,FALSE
+"temperature","Tbr","community_vs_none","all",-0.862,-5.13,4.13,FALSE
+"temperature","Tbr","emergent_mean","all - mean(15)",-2.73,-6.66,1.71,FALSE
+"temperature","Tbr","emergent_sum","all - sum(15)",-29.7,-62.6,6,FALSE
+"temperature","Topt","microbe_vs_none","mic_1",-0.874,-2.34,0.406,FALSE
+"temperature","Topt","microbe_vs_none","mic_10",-0.372,-1.79,1.11,FALSE
+"temperature","Topt","microbe_vs_none","mic_11",2.82,0.345,4.92,TRUE
+"temperature","Topt","microbe_vs_none","mic_12",-0.168,-1.47,1.04,FALSE
+"temperature","Topt","microbe_vs_none","mic_13",-0.467,-2.28,1.28,FALSE
+"temperature","Topt","microbe_vs_none","mic_14",-0.153,-1.4,1.07,FALSE
+"temperature","Topt","microbe_vs_none","mic_15",-0.067,-1.2,1.12,FALSE
+"temperature","Topt","microbe_vs_none","mic_2",-0.629,-2.2,0.808,FALSE
+"temperature","Topt","microbe_vs_none","mic_3",-0.693,-2.03,0.703,FALSE
+"temperature","Topt","microbe_vs_none","mic_4",-0.336,-1.57,0.862,FALSE
+"temperature","Topt","microbe_vs_none","mic_5",-0.141,-1.38,1.16,FALSE
+"temperature","Topt","microbe_vs_none","mic_6",-0.524,-2,0.744,FALSE
+"temperature","Topt","microbe_vs_none","mic_7",-0.243,-1.7,1.15,FALSE
+"temperature","Topt","microbe_vs_none","mic_8",-0.255,-1.49,1.02,FALSE
+"temperature","Topt","microbe_vs_none","mic_9",-0.565,-2.27,0.911,FALSE
+"temperature","Topt","community_vs_none","all",1.48,-0.641,3.43,FALSE
+"temperature","Topt","emergent_mean","all - mean(15)",1.65,-0.392,3.42,FALSE
+"temperature","Topt","emergent_sum","all - sum(15)",4.35,-8.05,15.7,FALSE
+"temperature","peak","microbe_vs_none","mic_1",-433000,-806000,-57300,TRUE
+"temperature","peak","microbe_vs_none","mic_10",91800,-320000,514000,FALSE
+"temperature","peak","microbe_vs_none","mic_11",-998000,-1430000,-535000,TRUE
+"temperature","peak","microbe_vs_none","mic_12",81400,-307000,483000,FALSE
+"temperature","peak","microbe_vs_none","mic_13",-7e+05,-1080000,-341000,TRUE
+"temperature","peak","microbe_vs_none","mic_14",-7920,-403000,382000,FALSE
+"temperature","peak","microbe_vs_none","mic_15",40300,-322000,419000,FALSE
+"temperature","peak","microbe_vs_none","mic_2",-274000,-615000,108000,FALSE
+"temperature","peak","microbe_vs_none","mic_3",56500,-295000,426000,FALSE
+"temperature","peak","microbe_vs_none","mic_4",-345000,-698000,14600,FALSE
+"temperature","peak","microbe_vs_none","mic_5",34100,-368000,438000,FALSE
+"temperature","peak","microbe_vs_none","mic_6",-133000,-537000,297000,FALSE
+"temperature","peak","microbe_vs_none","mic_7",-101000,-475000,278000,FALSE
+"temperature","peak","microbe_vs_none","mic_8",-65900,-467000,322000,FALSE
+"temperature","peak","microbe_vs_none","mic_9",-228000,-637000,196000,FALSE
+"temperature","peak","community_vs_none","all",-717000,-1120000,-341000,TRUE
+"temperature","peak","emergent_mean","all - mean(15)",-517000,-811000,-238000,TRUE
+"temperature","peak","emergent_sum","all - sum(15)",2270000,-1900000,6120000,FALSE
